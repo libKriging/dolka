@@ -1,11 +1,18 @@
-##' .. content for \description{} (no empty lines) ..
+##' Overload the \code{predict} method of the class \code{"km"} of the
+##' \pkg{DiceKriging} package in order make possible the computation
+##' of derivatives.
 ##'
-##' .. content for \details{} ..
+##' When \code{deriv} is \code{TRUE}
+##' 
 ##' @title Predicted values, confidence intervals
-##' @param object,newdata,type see \code{\link[DiceKriging]{predict.km}}. 
-##' @param se.compute,cov.compute see \code{\link[DiceKriging]{predict.km}}. 
-##' @param light.return,bias.correct see \code{\link[DiceKriging]{predict.km}}. 
-##' @param checkNames see \code{\link[DiceKriging]{predict.km}}. 
+##'
+##' @param object,newdata,type see
+##'     \code{\link[DiceKriging]{predict.km}}.
+##' @param se.compute,cov.compute see
+##'     \code{\link[DiceKriging]{predict.km}}.
+##' @param light.return,bias.correct see
+##'     \code{\link[DiceKriging]{predict.km}}.
+##' @param checkNames see \code{\link[DiceKriging]{predict.km}}.
 ##'
 ##' @param deriv Logical. If \code{TRUE} further elements are added to
 ##'     the returned list, all concerning the the derivatives.
@@ -13,15 +20,16 @@
 ##' @param ... Not used yet.
 ##'
 ##' @import DiceKriging
-##' 
 ##' @method predict km
 ##' 
 ##' @return A list with the elements of \code{\link[DiceKriging]{predict.km}}
 ##' plus the following elements that relate to the derivatives w.r.t. the input 
 ##' \itemize{
 ##' \item{\code{trend.deriv} }{Derivative of the trend component.}
-##' \item{\code{mean.deriv} }{Derivative of the kriging mean.}
-##' \item{\code{s2.deriv} }{Derivative of the kriging variance.}
+##' \item{\code{mean.deriv} }{Derivative of the kriging mean. This is a matrix
+##'      with dimension \eqn{n, d}.}
+##' \item{\code{s2.deriv} }{Derivative of the kriging variance. This is
+##'     a matrix with dimension \eqn{n, d}.}
 ##' }
 ##' @examples
 ##' ## a 16-points factorial design, and the corresponding response
