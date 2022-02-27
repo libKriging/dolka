@@ -4,7 +4,7 @@
 \alias{predict.km}
 \title{Predicted values, confidence intervals}
 \usage{
-\method{predict}{km}(
+predict.km(
   object,
   newdata,
   type,
@@ -18,11 +18,14 @@
 )
 }
 \arguments{
-\item{object, newdata, type}{see \code{\link[DiceKriging]{predict.km}}.}
+\item{object, newdata, type}{see
+\code{\link[DiceKriging]{predict.km}}.}
 
-\item{se.compute, cov.compute}{see \code{\link[DiceKriging]{predict.km}}.}
+\item{se.compute, cov.compute}{see
+\code{\link[DiceKriging]{predict.km}}.}
 
-\item{light.return, bias.correct}{see \code{\link[DiceKriging]{predict.km}}.}
+\item{light.return, bias.correct}{see
+\code{\link[DiceKriging]{predict.km}}.}
 
 \item{checkNames}{see \code{\link[DiceKriging]{predict.km}}.}
 
@@ -35,33 +38,60 @@ the returned list, all concerning the the derivatives.}
 A list with the elements of \code{\link[DiceKriging]{predict.km}}
 plus the following elements that relate to the derivatives w.r.t. the input 
 \itemize{
-\item{\code{trend.deriv} }{Derivative of the trend component.}
-\item{\code{mean.deriv} }{Derivative of the kriging mean.}
-\item{\code{s2.deriv} }{Derivative of the kriging variance.}
+\item{\code{trend.deriv} }{
+Derivative of the trend component. This is an array with dimension
+     \eqn{[n, n, d]}{c(n, n, d)}.
+}
+\item{\code{mean.deriv}, \code{s2.deriv} }{
+Derivatives of the kriging mean and kriging variance. These are
+     arrays with dimension \eqn{[n, n, d]}{c(n, n, d)}.
+}
+\item{\code{cov.deriv} }{
+   Derivative of the kriging covariance. This is a
+    four-dimensional array with dimension \eqn{[n, n, n, d]}{c(n, n, n, d)}.
+   }
 }
 }
 \description{
-.. content for \description{} (no empty lines) ..
+Overload the \code{predict} method of the class \code{"km"} of the
+\pkg{DiceKriging} package in order make possible the computation
+of derivatives.
 }
 \details{
-.. content for \details{} ..
+When \code{deriv} is \code{TRUE} "Jacobian" arrays are returned
+with the following rule. For a function
+\eqn{\mathbf{F}(\mathbf{X})}{F(X)} with a
+\eqn{q \times d}{c(q, d)}
+matrix argument and a \eqn{n \times m}{c(n, m)} matrix value,
+the Jacobian array has dimension
+\eqn{(n \times m) \times (q \times d)}{c(n, m, q, d)} and element
+\deqn{D \mathbf{F}(\mathbf{X})[i, j, k, \ell] = \frac{\partial F_{i,j}}{\partial X_{k,\ell}}}{DF(X)[i, j, k, ell] = dF[i, j] / dX[k, ell]}. This rule is compatible with the
+R arrays rule: if the function is considered as a function
+of a vector argument \code{as.vector(X)} with the vector value
+\code{as.vector(F(X))}, then the
 }
+\section{Caution}{
+ XXXY remettre "method predict km" dans le roxygen
+}
+
 \examples{
 ## a 16-points factorial design, and the corresponding response
 d <- 2; n <- 16
-fact.design  <- expand.grid(x1 = seq(0, 1, length = 4), x2 = seq(0, 1, length = 4))
-branin.resp <- apply(fact.design, 1, branin)
+X  <- expand.grid(x1 = seq(0, 1, length = 4), x2 = seq(0, 1, length = 4))
+y <- apply(X, MARGIN = 1, FUN = branin)
 ## kriging model 1 : gaussian covariance structure, no trend,
 ##                   no nugget effect
-myKm <- km(~1 + x1 + x2, design=fact.design, response=branin.resp, covtype="gauss")
-## predicting at testdata points
-testdata <- expand.grid(x1 = s <- seq(0, 1, length = 15), x2 = s)
-pred <- predict(myKm, newdata = testdata[10, ], type = "UK", deriv = TRUE)
-newdata <- testdata[10, ]
+myKm <- km(~1 + x1 + x2, design = X, response = y, covtype = "gauss")
+## predicting at new points
+XNew <- expand.grid(x1 = s <- seq(0, 1, length = 15), x2 = s)
+pred <- predict(myKm, newdata = XNew[10, ], type = "UK", deriv = TRUE)
+newdata <- XNew[10, ]
 c.newdata <- covMat1Mat2(object = myKm@covariance,
                          X1 = myKm@X, X2 = matrix(newdata, nrow = 1),
                          nugget.flag = myKm@covariance@nugget.flag)
-covVector.dx(x = newdata, X = myKm@X, object = myKm@covariance, c = c.newdata)
+covVector.dx(x = newdata, X = myKm@X,
+             object = myKm@covariance,
+             c = c.newdata)
 trend.deltax(x = newdata, model = myKm)
 
 }

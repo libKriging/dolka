@@ -5,8 +5,9 @@ Version: 0.0.1
 Author: Yves Deville	
 Maintainer: The package maintainer <deville.yves@alpestat.com>
 Description: Transitional package for Bayesian optimization using DiceOptim
-    and libKriging
+    and libKriging.
 Depends: DiceKriging, DiceOptim
+Suggests: testthat
 Imports: stats
 License: GPL
 Encoding: UTF-8

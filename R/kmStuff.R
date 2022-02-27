@@ -1,17 +1,32 @@
+
+## *****************************************************************************
 ##' Overload the \code{predict} method of the class \code{"km"} of the
 ##' \pkg{DiceKriging} package in order make possible the computation
 ##' of derivatives.
 ##'
-##' When \code{deriv} is \code{TRUE}
+##' When \code{deriv} is \code{TRUE} "Jacobian" arrays are returned
+##' with the following rule. For a function
+##' \eqn{\mathbf{F}(\mathbf{X})}{F(X)} with a
+##' \eqn{q \times d}{c(q, d)}
+##' matrix argument and a \eqn{n \times m}{c(n, m)} matrix value,
+##' the Jacobian array has dimension
+##' \eqn{(n \times m) \times (q \times d)}{c(n, m, q, d)} and element
+##' \deqn{D \mathbf{F}(\mathbf{X})[i, j, k, \ell] = \frac{\partial F_{i,j}}{\partial X_{k,\ell}}}{DF(X)[i, j, k, ell] = dF[i, j] / dX[k, ell]}. This rule is compatible with the
+##' R arrays rule: if the function is considered as a function
+##' of a vector argument \code{as.vector(X)} with the vector value
+##' \code{as.vector(F(X))}, then the 
 ##' 
 ##' @title Predicted values, confidence intervals
 ##'
 ##' @param object,newdata,type see
 ##'     \code{\link[DiceKriging]{predict.km}}.
+##'
 ##' @param se.compute,cov.compute see
 ##'     \code{\link[DiceKriging]{predict.km}}.
+##'
 ##' @param light.return,bias.correct see
 ##'     \code{\link[DiceKriging]{predict.km}}.
+##' 
 ##' @param checkNames see \code{\link[DiceKriging]{predict.km}}.
 ##'
 ##' @param deriv Logical. If \code{TRUE} further elements are added to
@@ -20,165 +35,231 @@
 ##' @param ... Not used yet.
 ##'
 ##' @import DiceKriging
-##' @method predict km
+##' @export
+##'
+##' @section Caution: XXXY remettre "method predict km" dans le roxygen
 ##' 
 ##' @return A list with the elements of \code{\link[DiceKriging]{predict.km}}
 ##' plus the following elements that relate to the derivatives w.r.t. the input 
 ##' \itemize{
-##' \item{\code{trend.deriv} }{Derivative of the trend component.}
-##' \item{\code{mean.deriv} }{Derivative of the kriging mean. This is a matrix
-##'      with dimension \eqn{n, d}.}
-##' \item{\code{s2.deriv} }{Derivative of the kriging variance. This is
-##'     a matrix with dimension \eqn{n, d}.}
+##' \item{\code{trend.deriv} }{
+##' Derivative of the trend component. This is an array with dimension
+##'      \eqn{[n, n, d]}{c(n, n, d)}.
+##' }
+##' \item{\code{mean.deriv}, \code{s2.deriv} }{
+##' Derivatives of the kriging mean and kriging variance. These are
+##'      arrays with dimension \eqn{[n, n, d]}{c(n, n, d)}.
+##' }
+##' \item{\code{cov.deriv} }{
+##'    Derivative of the kriging covariance. This is a
+##'     four-dimensional array with dimension \eqn{[n, n, n, d]}{c(n, n, n, d)}.
+##'    }
 ##' }
 ##' @examples
 ##' ## a 16-points factorial design, and the corresponding response
 ##' d <- 2; n <- 16
-##' fact.design  <- expand.grid(x1 = seq(0, 1, length = 4), x2 = seq(0, 1, length = 4))
-##' branin.resp <- apply(fact.design, 1, branin)
+##' X  <- expand.grid(x1 = seq(0, 1, length = 4), x2 = seq(0, 1, length = 4))
+##' y <- apply(X, MARGIN = 1, FUN = branin)
 ##' ## kriging model 1 : gaussian covariance structure, no trend,
 ##' ##                   no nugget effect
-##' myKm <- km(~1 + x1 + x2, design=fact.design, response=branin.resp, covtype="gauss")
-##' ## predicting at testdata points
-##' testdata <- expand.grid(x1 = s <- seq(0, 1, length = 15), x2 = s)
-##' pred <- predict(myKm, newdata = testdata[10, ], type = "UK", deriv = TRUE)
-##' newdata <- testdata[10, ]
+##' myKm <- km(~1 + x1 + x2, design = X, response = y, covtype = "gauss")
+##' ## predicting at new points
+##' XNew <- expand.grid(x1 = s <- seq(0, 1, length = 15), x2 = s)
+##' pred <- predict(myKm, newdata = XNew[10, ], type = "UK", deriv = TRUE)
+##' newdata <- XNew[10, ]
 ##' c.newdata <- covMat1Mat2(object = myKm@covariance,
 ##'                          X1 = myKm@X, X2 = matrix(newdata, nrow = 1),
 ##'                          nugget.flag = myKm@covariance@nugget.flag)
-##' covVector.dx(x = newdata, X = myKm@X, object = myKm@covariance, c = c.newdata)
+##' covVector.dx(x = newdata, X = myKm@X,
+##'              object = myKm@covariance,
+##'              c = c.newdata)
 ##' trend.deltax(x = newdata, model = myKm)
 ##' 
 predict.km <- function(object, newdata, type,
-                       se.compute = TRUE, cov.compute = FALSE,
+                       se.compute = TRUE,
+                       cov.compute = FALSE,
                        light.return = FALSE,
-                       bias.correct = FALSE, checkNames = TRUE,
-                       deriv = FALSE, ...) {
+                       bias.correct = FALSE,
+                       checkNames = TRUE,
+                       deriv = FALSE,
+                       ...) {
+    
     ## newdata : n x d
     
+    ## extract some slots and rename
     nugget.flag <- object@covariance@nugget.flag 
-    
     X <- object@X
     y <- object@y
-    T <- object@T
-    z <- object@z
-    M <- object@M
-    beta <- object@trend.coef
+    L <- t(object@T)
+    zStar <- object@z
+    FStar <- object@M
+    betaHat <- object@trend.coef
     
+    ## =========================================================================
+    ## Checks and coercion
+    ## =========================================================================
+
     if (checkNames) {
-        newdata <- checkNames(X1 = X, X2 = newdata, X1.name = "the design",
-                              X2.name = "newdata")
+        XNew <- checkNames(X1 = X, X2 = newdata, X1.name = "the design",
+                           X2.name = "newdata")
     } else {
-        newdata <- as.matrix(newdata)
-        d.newdata <- ncol(newdata)
-        if (!identical(d.newdata, object@d)) {
-            stop("newdata must have the same numbers of columns than the experimental design")
+        XNew <- as.matrix(newdata)
+        dNew <- ncol(XNew)
+        if (!identical(dNew, object@d)) {
+            stop("'newdata' must have the same numbers of columns as the ",
+                 "experimental design used in 'object'")
         }
-        if (!identical(colnames(newdata), colnames(X))) {
-            ##  warning("column names mismatch between 'newdata' and
-            ## the experimental design - the columns of 'newdata' are
-            ## interpreted in the same order as the experimental
-            ## design names")
-            colnames(newdata) <- colnames(X)
+        if (!identical(colnames(XNew), colnames(X))) {
+            colnames(XNew) <- colnames(X)
         }
     }
     
-    F.newdata <- model.matrix(object@trend.formula, data = data.frame(newdata))
-    y.predict.trend <- F.newdata %*% beta
+    nNew <- nrow(XNew)
+    FNew <- model.matrix(object@trend.formula, data = data.frame(XNew))
+    muNewHat <- FNew %*% betaHat
+  
+    ## =========================================================================
+    ## compute 'KOldNew := K(XOld, XNew)'  with dim c(n, nNew) and then
+    ## KOldNewStar := L^{-1} %*% KOldNew.
+    ## =========================================================================
     
-    c.newdata <- covMat1Mat2(object@covariance, X1 = X, X2 = newdata,
-                             nugget.flag = object@covariance@nugget.flag)
-    ## compute c(x) for x = newdata ; remark that for prediction (or
-    ## filtering), cov(Yi, Yj)=0 even if Yi and Yj are the outputs
-    ## related to the equal points xi and xj.
+    KOldNew <- covMat1Mat2(object@covariance, X1 = X, X2 = XNew,
+                           nugget.flag = object@covariance@nugget.flag)
+    KOldNewStar <- backsolve(L, KOldNew, upper.tri = FALSE)
     
-    Tinv.c.newdata <- backsolve(t(T), c.newdata, upper.tri = FALSE)
-    y.predict.complement <- t(Tinv.c.newdata) %*% z
-    y.predict <- y.predict.trend + y.predict.complement
-    y.predict <- as.numeric(y.predict)
+    meanNewHat <- muNewHat + t(KOldNewStar) %*% zStar
+    meanNewHat <- as.numeric(meanNewHat)
     
-    output.list <- list()
-    output.list$trend <- y.predict.trend
-    output.list$mean <- y.predict
+    ## ========================================================================= 
+    ## Prepare an output list 'OL' stands for "output.list"
+    ## =========================================================================
+    
+    OL <- list()
+    OL$trend <- muNewHat
+    OL$mean <- meanNewHat
     
     if (!light.return) {
-        output.list$c <- c.newdata
-        output.list$Tinv.c <- Tinv.c.newdata
+        OL$c <- as.vector(KOldNew)
+        OL$Tinv.c <- as.vector(KOldNewStar)
     } 
+
     
-    ## A FAIRE : 
-    ## REMPLACER total.sd2 par cov(Z(x),Z(x)) ou x = newdata
-    ## partout dans les formules ci-dessous
-    ## c'est utile dans le cas non stationnaire
+    ## =========================================================================
+    ## 'sd2Total' is the variance
+    ## =========================================================================
     
     if ((se.compute) || (cov.compute)) {
         if (!is(object@covariance, "covUser") ) {
-            total.sd2 <- object@covariance@sd2
+            sd2Total <- object@covariance@sd2
         } else {
-            m <- nrow(newdata)
-            total.sd2 <- rep(NA,m)
-            for(i in 1:m) {
-                total.sd2[i] <- object@covariance@kernel(newdata[i, ], newdata[i, ])
+            s2Total <- rep(NA, nNew)
+            for(i in 1:nNew) {
+                sd2Total[i] <- object@covariance@kernel(XNew[i, ], XNew[i, ])
             }
         }
         if (object@covariance@nugget.flag) {
-            total.sd2 <- total.sd2 + object@covariance@nugget
+            sd2Total <- sd2Total + object@covariance@nugget
+        }
+
+        if (type == "UK") {
+            ## =============================================================
+            ## Compute 'RStar := qr.R(qr(FStar))',
+            ## Then the transpose of 'ENewDag := ENew %*% RStar^{-1}'
+            ## with 'ENew := FNew - FNewHat'
+            ## =============================================================
+        
+            RStar <- chol(crossprod(FStar)) 
+            ENewDagT <- backsolve(t(RStar),
+                                  t(FNew - t(KOldNewStar) %*% FStar),
+                                  upper.tri = FALSE)
+            
+            OL$ENewDagT <- ENewDagT
+            
         }
     }
     
-    
     if (se.compute) {
+
+        ## =====================================================================
+        ## Compute K(XNew, XOld) %*% K(XOld, XOld)^(-1) %*% K(XOld, XNew)
+        ## This is diagCrossprod(A) with A := KOldNewStar with
+        ## dimension c(n, nNew)
+        ## =====================================================================
         
-        ## compute c(x)'*C^(-1)*c(x)   for x = newdata
-        s2.predict.1 <- apply(Tinv.c.newdata, 2, crossprod)
+        ## s2Part1 <- apply(KOldNewStar, 2, crossprod)         ## less efficient
+        s2Pred1 <- dcrossprod(KOldNewStar)
         
         if (type == "SK") {
-            s2.predict <- pmax(total.sd2 - s2.predict.1, 0)
-            s2.predict <- as.numeric(s2.predict)
+
+            s2Pred <- pmax(sd2Total - s2Pred1, 0)
+            s2Pred <- as.numeric(s2Pred)
             q95 <- qnorm(0.975)
-        }
-        else if (type == "UK") {
             
-            T.M <- chol(t(M) %*% M)   # equivalently : qrR <- qr.R(qr(M))
-            ## 's2.predict.mat' is a matrix with n rows and p columns 
-            s2.predict.mat <- backsolve(t(T.M),
-                                        t(F.newdata - t(Tinv.c.newdata) %*% M),
-                                        upper.tri = FALSE)
+        } else if (type == "UK") {
+
+            ## =================================================================
+            ## Compute 'RStar := qr.R(qr(FStar))',
+            ## Then the transpose of 'ENewDag := ENew %*% RStar^{-1}' with
+            ## 'ENew := FNew - FNewHat'
+            ## =================================================================
             
-            s2.predict.2 <- apply(s2.predict.mat, 2, crossprod)
-            s2.predict <- pmax(total.sd2 - s2.predict.1 + s2.predict.2, 0)
-            s2.predict <- as.numeric(s2.predict)
+            ## RStar <- chol(crossprod(FStar)) 
+            ## ENewDagT <- backsolve(t(RStar),
+            ##                      t(FNew - t(KOldNewStar) %*% FStar),
+            ##                      upper.tri = FALSE)
+            
+            ## =================================================================
+            ## Compute 'diagCrossprod(A) = diag(t(A) %*% A)' with
+            ## 'A := ENewDagT with dimension c(p, nNew) 
+            ## =================================================================
+            
+            s2Pred2 <- dcrossprod(ENewDagT)
+            ## s2Pred2 <- apply(ENewDagT, 2, crossprod)    ## less efficient
+            
+            s2Pred <- pmax(sd2Total - s2Pred1 + s2Pred2, 0)
+            s2Pred <- as.numeric(s2Pred)
+
             if (bias.correct) {
-                s2.predict <- s2.predict * object@n/(object@n - object@p)
+                s2Pred <- s2Pred * object@n / (object@n - object@p)
             }
             q95 <- qt(0.975, object@n - object@p)
         }
         
-        s.predict <- sqrt(s2.predict)
-        lower95 <- y.predict - q95 * s.predict
-        upper95 <- y.predict + q95 * s.predict
+        sPred <- sqrt(s2Pred)
+        lower95 <- meanNewHat - q95 * sPred
+        upper95 <- meanNewHat + q95 * sPred
         
-        output.list$sd <- s.predict
-        output.list$lower95 <- lower95
-        output.list$upper95 <- upper95
+        OL$sd2 <- s2Pred
+        OL$sd <- sPred
+        OL$lower95 <- lower95
+        OL$upper95 <- upper95
     }
     
     if (cov.compute) {		
+
+        ## =====================================================================
+        ## Note that 'Sigma' may not be numerically positive definite
+        ## Also remind that the parameters of 'object@covariance' are
+        ## (constrained) ML estimates, including for the variance. So
+        ## the variance uses the denominator 'n', not 'n - p'.
+        ## =====================================================================
         
-        C.newdata <- covMatrix(object@covariance, newdata)[[1]]
-        cond.cov <- C.newdata - crossprod(Tinv.c.newdata)
+        KNewNew <- covMatrix(object@covariance, XNew)[["C"]]
+        Sigma <- KNewNew - crossprod(KOldNewStar)
+
+        ## XXX
+        OL$Sigma1 <- Sigma
         
         if (type == "UK") {	
-            T.M <- chol(t(M)%*%M)   # equivalently : qrR <- qr.R(qr(M))
-            s2.predict.mat <- backsolve(t(T.M),
-                                        t(F.newdata - t(Tinv.c.newdata) %*% M),
-                                        upper.tri = FALSE)
-            cond.cov <- cond.cov + crossprod(s2.predict.mat)
-            if (bias.correct) cond.cov <- cond.cov * object@n / (object@n - object@p)
+            Sigma <- Sigma + crossprod(ENewDagT)
+            if (bias.correct) {
+                Sigma <- Sigma * object@n / (object@n - object@p)
+            }
         }
-        
-        output.list$cov <- cond.cov
-        
+        ## XXX
+        OL$Sigma2 <- Sigma
+        OL$bias.correct <- bias.correct
+        OL$cov <- Sigma        
     }
 
     ## =========================================================================
@@ -188,107 +269,138 @@ predict.km <- function(object, newdata, type,
     
     if (deriv) {
         
-        newdata <- as.numeric(newdata)
+        ## =====================================================================
+        ## Prepare some 'empty' arrays for output
+        ## =====================================================================
         
-        if (!is.null(dnd <- dim(newdata))) {
-            if ((dnd[1] == 1) && (dnd[2] == object@d)) {
-                newdata <- drop(newdata)
-            } else {
-                stop("for now 'deriv = TRUE' can only be used when ",
-                     "'newdata' is a numeric vector with lenght 'd' ",
-                     "or a matrix with dimension c(1, d)")
+        muNewHatDer <- meanNewHatDer <- s2Der <-
+            array(0.0, dim = c(nNew, nNew, object@d),
+                  dimnames = list(NULL, NULL, colnames(object@X)))
+        
+        ## =====================================================================
+        ## Prepare more auxiliary variables.
+        ##  ________________________________________________________________
+        ## |     name       |         formula         |      dim            |
+        ## | -------------------------------------------------------------- |
+        ## | KOldNewStarDer | L^{-1} %*% D(KOldNew)   | c(n, nNew, nNew, d) |
+        ## | ENewDagDer     | D(ENew) %*% RStar^{-1}  | c(nNew, nNew, p, d) |
+        ## |________________________________________________________________|
+        ##
+        ## where 'D' stands for the derivative. Remind that 'KOldNew' and
+        ## 'ENewDagT' have been stored previously. Storing the derivatives
+        ## is only useful when the derivative of the covariance is needed,
+        ## but it costs nothing but space. 
+        ## =====================================================================
+        
+        KOldNewStarDer <-
+            array(0.0, dim = c(object@n, nNew, nNew, object@d),
+                  dimnames = list(NULL, NULL, NULL, colnames(object@X)))
+        ENewDagDer <-
+            array(0.0, dim = c(nNew, nNew, object@p, object@d),
+                  dimnames = list(NULL, NULL, NULL, colnames(object@X)))
+        
+        for (i in 1:nNew) {
+            
+            ## =================================================================
+            ## 'FNewiDer' and 'KOldNewiDer' are matrices with
+            ## dimension c(nNew, d)
+            ## =================================================================
+            
+            FNewiDer <- trend.deltax(x = XNew[i, ], model = object)
+            KOldNewi <- as.vector(KOldNew[ , i])
+            KOldNewiDer <- covVector.dx(x = as.vector(XNew[i, ]),
+                                        X = X,
+                                        object = object@covariance,
+                                        c = KOldNewi)
+            
+            KOldNewStarDer[ , i, i, ] <-
+                backsolve(L, KOldNewiDer, upper.tri = FALSE)
+            
+            ## Gradient of the kriging trend and mean
+            muNewHatDer[i, i, ] <- crossprod(FNewiDer, betaHat)
+            ## dim in product c(d, n) and NULL(length d)
+            meanNewHatDer[i, i, ] <- muNewHatDer[i, i, ] +
+                crossprod(KOldNewStarDer[ , i, i,  ], zStar) 
+
+            ## dim in product c(d, n) and NULL(length n)
+            s2Der[i, i,  ] <-
+                - 2 * crossprod(KOldNewStarDer[ , i, i, ],
+                                drop(KOldNewStar[ , i]))
+            
+            ## dim in product c(d, n) and c(n, p)
+            
+            if (type == "UK") {
+                ENewDagDer[i, i, , ] <-
+                    backsolve(t(RStar),
+                              FNewiDer -
+                              t(crossprod(KOldNewStarDer[ , i, i, ], FStar)),
+                              upper.tri = FALSE)
+                ## dim in product NULL (length p) and c(p, d) because of 'drop'
+                s2Der[i, i, ] <- s2Der[i, i, ] + 2 * drop(ENewDagT[ , i]) %*%
+                    drop(ENewDagDer[i, i, , ])
             }
-        }
-
-        ## 'derFnew' is a vector with length d
-        F.newdata.deriv <- trend.deltax(x = newdata, model = object)
-        
-        ## 'c.deriv' and 'cStar.deriv' are  matrices with dimension c(n, d)
-        c.deriv <- covVector.dx(x = newdata, X = X,
-                             object = object@covariance, c = c.newdata)
-        cStar.deriv <- backsolve(t(T), c.deriv, upper.tri = FALSE)
-
-        ## Gradient of the kriging mean
-        output.list$trend.deriv <- crossprod(F.newdata.deriv, beta)
-        output.list$mean.deriv <- output.list$trend.deriv +
-            crossprod(cStar.deriv, z) 
-
-        ## 'Tinv.c.newdata' is something like 'cStar'
-        sd2.deriv <-  -2 * crossprod(Tinv.c.newdata, cStar.deriv)
-        
-        if (type == "UK") {
             
-            ## remind of the defintiion of 's2.predict.mat'
-            ## s2.predict.mat <- backsolve(t(T.M),
-            ##                            t(F.newdata - t(Tinv.c.newdata) %*% M),
-            ##                            upper.tri = FALSE)
-            
-            s2.predict.der <- backsolve(t(T.M),
-                                        F.newdata.deriv - t(M) %*% cStar.deriv,
-                                        upper.tri = FALSE)
-            
-            sd2.deriv <-  sd2.deriv + 2 * crossprod(s2.predict.mat, s2.predict.der)
         }
         
-        output.list$sd2.deriv <- sd2.deriv
-        output.list$sd.deriv <- sd2.deriv / (2 * output.list$sd)
-
+        OL$trend.deriv <- muNewHatDer
+        OL$mean.deriv <- meanNewHatDer
+        
+        OL$sd2.deriv <- s2Der
+        OL$sd.deriv <- s2Der / (2 * OL$sd)
+        
+        if (cov.compute) {
+            
+            covDeriv <-
+                array(0.0, dim = c(nNew, nNew, nNew, object@d),
+                      dimnames = list(NULL, NULL, NULL, colnames(object@X)))
+            
+            for (i in 1:nNew) {
+                for (j in 1:nNew) {
+                    covDeriv[i, j, i, ] <-
+                        covVector.dx(x = as.vector(XNew[i, ]),
+                                     X = XNew[j, , drop = FALSE],
+                                     object = object@covariance,
+                                     c = KNewNew[i, j])
+                    
+                    ## dim in product c(d, n) and NULL(length n)
+                    covDeriv[i, j, i, ]  <- covDeriv[i, j, i, ] -
+                        crossprod(drop(KOldNewStarDer[ , i, i, ]),
+                                  drop(KOldNewStar[ , j]))
+                    
+                    if (type == "UK") {
+                        ## dim in product NULL (length p) and c(p, d)
+                        covDeriv[i, j, i, ] <- covDeriv[i, j, i, ] +
+                            drop(ENewDagT[ , j]) %*% drop(ENewDagDer[i, i, , ])
+                    }
+                    
+                }
+            }
+            for (i in 1:nNew) {
+                for (ell in 1:object@d) {
+                    covDeriv[ , , i, ell] <-  covDeriv[ , , i, ell] +
+                        t(covDeriv[ , , i, ell])
+                }
+            }
+            OL$cov.deriv <- covDeriv
+        }
     }
     
-    return(output.list)
+    return(OL)
     
 }
 
 ##' @export
 ##' @method predict km
-setMethod("predict", "km", 
-          function(object, newdata, type, se.compute = TRUE,
-                   cov.compute = FALSE, light.return = FALSE, bias.correct = FALSE,
-                   checkNames = TRUE, ...) {
-            predict.km(object = object, newdata = newdata, type = type,
-                       se.compute = se.compute, cov.compute = cov.compute,
+if (FALSE) {
+    setMethod("predict", "km", 
+              function(object, newdata, type, se.compute = TRUE,
+                       cov.compute = FALSE, light.return = FALSE, bias.correct = FALSE,
+                       checkNames = TRUE, ...) {
+                  predict.km(object = object, newdata = newdata, type = type,
+                             se.compute = se.compute, cov.compute = cov.compute,
                        light.return = light.return,
                        bias.correct = bias.correct, checkNames = checkNames, ...)
-          }
-          )
-
-if (FALSE) {
-    
-    krigeMean <- function(x, model, type = "UK", ...) {
-        newdata <- data.frame(matrix(as.numeric(x), nrow = 1))
-        colnames(newdata) <- colnames(model@X)
-        
-        p <- predict(object = model,
-                     newdata = newdata, type = type)$mean
-        p
-    }
-    
-    krigeVar <- function(x, model, type = "UK", ...) {
-        newdata <- data.frame(matrix(as.numeric(x), nrow = 1))
-        colnames(newdata) <- colnames(model@X)
-        
-        p <- predict(object = model,
-                     newdata = newdata, type = type)$sd^2
-        p
-    }
-    krigeSd <- function(x, model, type = "UK", ...) {
-        newdata <- data.frame(matrix(as.numeric(x), nrow = 1))
-        colnames(newdata) <- colnames(model@X)
-        
-        p <- predict(object = model,
-                     newdata = newdata, type = type)$sd
-        p
-    }
-    
-    library(numDeriv)
-    x <- runif(2)
-    type <- "SK"
-    krigeMean(x, mod = myKm, deriv = TRUE)
-    gMean <- grad(krigeMean, x = x, model = myKm, type = type)
-    gVar <- grad(krigeVar, x = x, model = myKm, type = type)
-    gSd <- grad(krigeSd, x = x, model = myKm, type = type)
-    p <- predict(myKm,
-                 newdata = matrix(x, ncol = 2, dimnames = list(NULL, c("x1", "x2"))),
-                 type = type, deriv = TRUE)
-
+              }
+              )
 }
+
