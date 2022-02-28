@@ -40,15 +40,17 @@ plus the following elements that relate to the derivatives w.r.t. the input
 \itemize{
 \item{\code{trend.deriv} }{
 Derivative of the trend component. This is an array with dimension
-     \eqn{[n, n, d]}{c(n, n, d)}.
+     \eqn{[n_{\texttt{new}}, n_{\texttt{new}}, d]}{c(nNew, nNew, d)}.
 }
 \item{\code{mean.deriv}, \code{s2.deriv} }{
 Derivatives of the kriging mean and kriging variance. These are
-     arrays with dimension \eqn{[n, n, d]}{c(n, n, d)}.
+     arrays with dimension \eqn{[n_{\texttt{new}}, n_{\texttt{new}}, d]}{c(nNew, nNew, d)}.
 }
 \item{\code{cov.deriv} }{
    Derivative of the kriging covariance. This is a
-    four-dimensional array with dimension \eqn{[n, n, n, d]}{c(n, n, n, d)}.
+    four-dimensional array with dimension
+   \eqn{[n_{\texttt{new}}, \, n_{\texttt{new}}, \, n_{\texttt{new}}, \,d]}{
+   c(nNew, nNew, nNew, d)}.
    }
 }
 }
@@ -60,15 +62,18 @@ of derivatives.
 \details{
 When \code{deriv} is \code{TRUE} "Jacobian" arrays are returned
 with the following rule. For a function
-\eqn{\mathbf{F}(\mathbf{X})}{F(X)} with a
-\eqn{q \times d}{c(q, d)}
-matrix argument and a \eqn{n \times m}{c(n, m)} matrix value,
-the Jacobian array has dimension
-\eqn{(n \times m) \times (q \times d)}{c(n, m, q, d)} and element
-\deqn{D \mathbf{F}(\mathbf{X})[i, j, k, \ell] = \frac{\partial F_{i,j}}{\partial X_{k,\ell}}}{DF(X)[i, j, k, ell] = dF[i, j] / dX[k, ell]}. This rule is compatible with the
-R arrays rule: if the function is considered as a function
-of a vector argument \code{as.vector(X)} with the vector value
-\code{as.vector(F(X))}, then the
+\eqn{\mathbf{F}(\mathbf{X})}{F(X)} with a \eqn{q \times d}{c(q,
+d)} matrix argument and a \eqn{n \times m}{c(n, m)} matrix value,
+the Jacobian array has dimension \eqn{(n \times m) \times (q
+\times d)}{c(n, m, q, d)} and element \deqn{D
+\mathbf{F}(\mathbf{X})[i, j, k, \ell] = \frac{\partial
+F_{i,j}}{\partial X_{k,\ell}}}{DF(X)[i, j, k, ell] = dF[i, j] /
+dX[k, ell].} This rule is compatible with the R arrays indexation
+rule: if the function is considered as a function of a vector
+argument \code{as.vector(X)} with the vector value
+\code{as.vector(F(X))}, then by simply changing the \code{dim}
+attribute of the Jacobian matrix, we get the Jacobian array as
+described.
 }
 \section{Caution}{
  XXXY remettre "method predict km" dans le roxygen
@@ -76,12 +81,15 @@ of a vector argument \code{as.vector(X)} with the vector value
 
 \examples{
 ## a 16-points factorial design, and the corresponding response
+
 d <- 2; n <- 16
 X  <- expand.grid(x1 = seq(0, 1, length = 4), x2 = seq(0, 1, length = 4))
 y <- apply(X, MARGIN = 1, FUN = branin)
+
 ## kriging model 1 : gaussian covariance structure, no trend,
 ##                   no nugget effect
 myKm <- km(~1 + x1 + x2, design = X, response = y, covtype = "gauss")
+
 ## predicting at new points
 XNew <- expand.grid(x1 = s <- seq(0, 1, length = 15), x2 = s)
 pred <- predict(myKm, newdata = XNew[10, ], type = "UK", deriv = TRUE)

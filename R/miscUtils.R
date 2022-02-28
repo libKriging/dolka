@@ -10,7 +10,7 @@
 ##'
 ##' Several methods can be used to compute the result in R (using
 ##' \code{apply}, ...). To our best knowledge the method used here is
-##' the most efficient in genral framework.
+##' the most efficient in general framework.
 ##' 
 ##' @title Diagonal of the Cross-Product of a Matrix
 ##' 
@@ -18,7 +18,8 @@
 ##'
 ##' @return The diagonal vector of \code{crossprod(X)}.
 ##'
-##' @author Thanks to Clément Walter for the suggested code.
+##' @author Thanks to Clément Walter for comparisons and the suggested
+##'     code.
 ##' 
 dcrossprod <- function(X) {
 

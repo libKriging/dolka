@@ -50,7 +50,7 @@
 ##' @param diagOnly Logical. If \code{TRUE} the structure of the
 ##'     result takes into account the fact that the row \eqn{i} of the
 ##'     trend matrix \eqn{\mathbf{F}}{F} depends only on the row
-##'     \enw{i} of the design matrix \eqn{\mathbf{X}}{X} so some
+##'     \eqw{i} of the design matrix \eqn{\mathbf{X}}{X} so some
 ##'     elements in the Jacobian array are structural zeroes and can
 ##'     be omitted. See \bold{Details}.
 ##' 

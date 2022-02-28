@@ -24,8 +24,9 @@ may have to be computed without formin the covariance.
 \details{
 Several methods can be used to compute the result in R (using
 \code{apply}, ...). To our best knowledge the method used here is
-the most efficient in genral framework.
+the most efficient in general framework.
 }
 \author{
-Thanks to Clément Walter for the suggested code.
+Thanks to Clément Walter for comparisons and the suggested
+    code.
 }
