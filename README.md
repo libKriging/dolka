@@ -20,7 +20,9 @@ these methods. In a first step these methods will be re-implemented in
 **dolka** (based on existing source codes from the packages) in view of
 overloading the existing methods for the `"km"` class. Then, we will
 suggest some light refactoring to the authors of **DiceOptim**,
-**KrigeInv** and maybe to those of other packages using **DiceKriging**.
+**KrigeInv** and maybe to those of other packages using **DiceKriging**,
+if they want their package to allow the use of both **DiceKriging** and
+**libKriging** via its R interface **rlibkriging**.
 
 Of major importance in Bayesian optimisation, the `predict` method
 should be able to provide the derivative of the kriging mean and the
