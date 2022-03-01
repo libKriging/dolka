@@ -407,7 +407,7 @@ predict.km <- function(object, newdata, type,
 
 ##' @export
 ##' @method predict km
-if (FALSE) {
+if (TRUE) {
     setMethod("predict", "km", 
               function(object, newdata, type, se.compute = TRUE,
                        cov.compute = FALSE, light.return = FALSE, bias.correct = FALSE,

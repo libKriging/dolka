@@ -6,9 +6,9 @@ Author: Yves Deville
 Maintainer: The package maintainer <deville.yves@alpestat.com>
 Description: Transitional package for Bayesian optimization using DiceOptim
     and libKriging.
-Depends: DiceKriging, DiceOptim, numDeriv
+Depends: DiceKriging, DiceOptim, numDeriv, methods,
 Suggests: testthat
-Imports: stats
+Imports: stats, randtoolbox, pbivnorm, rgenoud, mnormt, DiceDesign, parallel
 License: GPL
 Encoding: UTF-8
 LazyData: true

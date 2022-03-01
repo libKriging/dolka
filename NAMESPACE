@@ -2,5 +2,9 @@
 
 export()
 export(predict.km)
+export(qEI)
+export(qEI.grad)
 export(trend)
 import(DiceKriging)
+importFrom(mnormt,dmnorm)
+importFrom(mnormt,pmnorm)
