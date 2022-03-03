@@ -1,0 +1,49 @@
+##' @title Utility functions for Bayesian optimization 
+##'
+##' @description Transitional package for Bayes Optimization using
+##'     either \pkg{DiceKriging} or \pkg{rlikriging} for the kriging
+##'     steps.
+##' 
+##' @section Authors:
+##'     \itemize{
+##'    
+##'      \item{
+##'
+##'         Most of the functions devoted to Keiging are to be
+##'         credited to the authors of the \pkg{DiceKriging} package:
+##'         Oliver Roustant, David Ginsbourger and Yves Deville or to
+##'         contributors: Clement Chevalier and Yann Richet.
+##'
+##'      }
+##'
+##'     \item {
+##'
+##'         Most functions devoted to Bayesian Optimization are to be
+##'         credited to the authors of the \pkg{DiceOptim}: Victor
+##'         Picheny, David Ginsbourger and Olivier Roustant or to
+##'         contributors: Michael Binois, Sebastien Marmin and Tobias
+##'         Wagner.
+##'
+##'      }
+##'    
+##'      \item {  
+##'
+##'         Most functions devoted to kriging inversion are to be
+##'         credited to the authors of the \pkg{KrigInv} package:
+##'         Clement Chevalier, Victor Picheny, David Ginsbourger and
+##'         Dario Azzimonti.
+##'
+##'      }
+##' 
+##'  }
+##'
+##' @note The package is transitional meaning that it may exist only
+##'     for a quite short period. Hopefully the implemented functions
+##'     will continue to be available in other R packages in which
+##'     they will be included.
+##'     
+##' @docType package
+##' @name dolka-package
+NULL
+
+

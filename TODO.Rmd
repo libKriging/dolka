@@ -1,0 +1,20 @@
+---
+title: "TODO dolka"
+author: "Yves Deville"
+date: "`r Sys.Date()`"
+output:
+  md_document:
+    toc: true
+    number_sections: true
+---
+
+This document is intended to be read from the generated html output
+`TODO.html`. However wherever this output is not suitably rendered you
+can read the mardown version `TODO.md` which seems correct up to some
+problems for math.
+	
+# General
+
+- The one-point optimization criteria such as \code{"EI"} and their
+  derivatives could optionnaly be computed by the \code{predict}
+  method or by a new method say \code{optCrit1}.
