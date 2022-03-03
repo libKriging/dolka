@@ -19,13 +19,21 @@ contours(
 )
 }
 \arguments{
-\item{object}{An object with class \code{"km"} or equivalent.}
+\item{object}{An object with class \code{"km"} or equivalent
+with two inputs.}
 
 \item{which}{Character. Name of the kriging function/statistic to
 be shown.}
 
-\item{other}{Character. Name of a function then can be compared
-to the kriging mean,}
+\item{other}{Character. Name of a function. This can be a function
+to be compared to the stat(s) given in \code{which} (usually
+the kriging mean). If \code{which} has length zero we can also
+specify a gradient function. The function must be a function
+of one vector argument. It optionally can have one more
+argument with name \code{"model"} or \code{"object"} in which
+case \code{object} will be passed will be passed to this
+argument as is required to diplay a one-point Bayesian
+optimisation criterion (EI, AEI, ...), see \bold{Examples}.}
 
 \item{lower, upper}{Numeric vectors with length 2 definign the
 bounds of the rectangular region for the contours.}
@@ -100,4 +108,16 @@ contours(model, which = "sd", grad = TRUE) +
     ggtitle("Kriging sd, gradients at contours")
 contours(model, which = "sd", grad = TRUE, whereGrad = "grid") +
     ggtitle("Kriging sd, gradients at grid points")
+
+## more involved examples
+## ======================
+\dontrun{
+braninG <- function(x) braninGrad(x)$gradient
+contours(model, which = character(0), grad = TRUE,
+         other = "branin", otherGrad = "braninG", whereGrad = "grid") +
+    ggtitle("Branin function and its gradient")
+contours(model, which = character(0), grad = TRUE,
+         other = "EI", otherGrad = "EI.grad", whereGrad = "grid") +
+    ggtitle("Expected Improvement and its gradient")
+}
 }

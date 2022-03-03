@@ -17,13 +17,21 @@
 ##' @title Contours of a Function Related to a Kriging Model object
 ##'     with Two Inputs
 ##' 
-##' @param object An object with class \code{"km"} or equivalent.
+##' @param object An object with class \code{"km"} or equivalent
+##'     with two inputs.
 ##' 
 ##' @param which Character. Name of the kriging function/statistic to
 ##'     be shown.
 ##' 
-##' @param other Character. Name of a function then can be compared
-##'     to the kriging mean,
+##' @param other Character. Name of a function. This can be a function
+##'     to be compared to the stat(s) given in \code{which} (usually
+##'     the kriging mean). If \code{which} has length zero we can also
+##'     specify a gradient function. The function must be a function
+##'     of one vector argument. It optionally can have one more
+##'     argument with name \code{"model"} or \code{"object"} in which
+##'     case \code{object} will be passed will be passed to this
+##'     argument as is required to diplay a one-point Bayesian
+##'     optimisation criterion (EI, AEI, ...), see \bold{Examples}.
 ##'
 ##' @param lower,upper Numeric vectors with length 2 definign the
 ##'     bounds of the rectangular region for the contours.
@@ -83,6 +91,18 @@
 ##'     ggtitle("Kriging sd, gradients at contours")
 ##' contours(model, which = "sd", grad = TRUE, whereGrad = "grid") +
 ##'     ggtitle("Kriging sd, gradients at grid points")
+##'
+##' ## more involved examples
+##' ## ======================
+##' \dontrun{
+##' braninG <- function(x) braninGrad(x)$gradient
+##' contours(model, which = character(0), grad = TRUE,
+##'          other = "branin", otherGrad = "braninG", whereGrad = "grid") +
+##'     ggtitle("Branin function and its gradient")
+##' contours(model, which = character(0), grad = TRUE,
+##'          other = "EI", otherGrad = "EI.grad", whereGrad = "grid") +
+##'     ggtitle("Expected Improvement and its gradient")
+##' }
 contours <- function(object,
                      which = "mean",
                      other = NULL,
@@ -93,8 +113,6 @@ contours <- function(object,
                      otherGrad = NULL,
                      whereGrad = "levels",
                      ...) {
-
-
     
     x1 <- x2 <- stat <- statDer1 <- statDer2 <- z <- NULL
     
@@ -136,7 +154,8 @@ contours <- function(object,
     if (grad) {
         
         if (length(which) + o > 1 ||
-            !(which %in% c("trend", "mean", "sd", "var"))) {
+            (length(which) > 0 &&
+             !(which %in% c("trend", "mean", "sd", "var")))) {
             stop("When 'grad' is TRUE only one function can be ",
                  "used along with its gradient")   
         }
@@ -149,9 +168,15 @@ contours <- function(object,
         if (o) {
             nmo <- as.character(other)
             other <- match.fun(other)
-            otherGrad <- match.fun(otherGrad)
-            stat  <- apply(df, MARGIN = 1, FUN = other)
+            if ("model" %in% names(formals(other))) {
+                stat <- apply(df, MARGIN = 1, FUN = other, model = object)
+            } else if ("object" %in% names(formals(other))) {
+                stat <- apply(df, MARGIN = 1, FUN = other, object = object)
+            } else {
+                stat <- apply(df, MARGIN = 1, FUN = other)
+            }
             df <- data.frame(df, stat = stat)
+            
         } else {
             if (which == "var") which <- "s2"
             df <- data.frame(df, stat = pred[[which]])
@@ -184,14 +209,37 @@ contours <- function(object,
         }
         
         if (o) {
-            nmo <- as.character(other)
-            other <- match.fun(other)
-            otherGrad <- match.fun(otherGrad)
-            stat  <- apply(df, MARGIN = 1, FUN = other)
-            statDer <- t(apply(df, MARGIN = 1, FUN = otherGrad))
-            dfDer <- data.frame(dfDer, stat = stat,
-                                statDer1 = statDer[ , 1],
-                                statDer2 = statDer[ , 2])
+            ## nmo <- as.character(other)
+            ## other <- match.fun(other)
+            ## otherGrad <- match.fun(otherGrad)
+            ## stat  <- apply(df, MARGIN = 1, FUN = other)
+            ## statDer <- t(apply(df, MARGIN = 1, FUN = otherGrad))
+            ## dfDer <- data.frame(dfDer, stat = stat,
+            ##                     statDer1 = statDer[ , 1],
+            ##                     statDer2 = statDer[ , 2])
+            if ("model" %in% names(formals(other))) {
+                stat <- apply(dfDer, MARGIN = 1, FUN = other, model = object)
+            } else if ("object" %in% names(formals(other))) {
+                stat <- apply(dfDer, MARGIN = 1, FUN = other, object = object)
+            } else {
+                stat <- apply(dfDer, MARGIN = 1, FUN = other)
+            }
+            
+            predDer <- data.frame(stat = stat)
+            which <- "stat"
+            
+            if (!is.null(otherGrad)) {
+                otherGrad <- match.fun(otherGrad)
+                if ("model" %in% names(formals(other))) {
+                    statDer <- t(apply(dfDer, MARGIN = 1, FUN = otherGrad, model = object))
+                } else if ("object" %in% names(formals(other))) {
+                    statDer <- t(apply(dfDer, MARGIN = 1, FUN = otherGrad, object = object))
+                } else {
+                    statDer <- t(apply(dfDer, MARGIN = 1, FUN = otherGrad))
+                }
+                colnames(statDer) <- c("x1", "x2")
+            }
+            
         } else {
             predDer <- predict(object, newdata = dfDer, deriv = TRUE, type = "UK")    
             statDer <- predDer[[paste0(which, ".deriv")]]

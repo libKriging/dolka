@@ -48,7 +48,7 @@ The expected improvement, defined as \deqn{EI(x) := E[(
 \description{
 Computes the Expected Improvement at current
     location. The current minimum of the observations can be
-    replaced by an arbitrary value (plugin), which is usefull in
+    replaced by an arbitrary value (plugin), which is useful in
     particular in noisy frameworks.
 }
 \examples{

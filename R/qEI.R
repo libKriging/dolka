@@ -206,7 +206,7 @@ qEI <- function(x, model, plugin = NULL,
         non_symetric_term <- matrix(0, q, q)
     }
     
-    for(k in 1:q){
+    for (k in 1:q){
         ## covariance matrix of the vector Z^(k)
         Sigma_k <- covZk(sigma = sigma, index = k )
         
