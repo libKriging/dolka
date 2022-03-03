@@ -36,9 +36,13 @@
 ##'     the returned list, all concerning the the derivatives.
 ##' 
 ##' @param ... Not used yet.
-##'
+##' 
+##' @importFrom methods is
+##' @importFrom stats  dnorm model.matrix qnorm qt
 ##' @import DiceKriging
+##' 
 ##' @export
+##' @method predict km
 ##'
 ##' @section Caution: XXXY remettre "method predict km" dans le roxygen
 ##' 

@@ -96,18 +96,20 @@ print(grad.numeric)
 print(grad.analytic)
 
 \dontrun{
+     lower <- c(0, 0); upper <- c(1, 1)
      # graphics: displays the EI criterion, the design points in black, 
      # the batch points in red and the gradient in blue.
-     nGrid <- 15
+     nGrid <- 50
      gridAxe1 <- seq(lower[1], upper[1], length = nGrid)
      gridAxe2 <- seq(lower[2], upper[2], length = nGrid)
      grid <- expand.grid(gridAxe1, gridAxe2)
-     aa <- apply(grid, 1, EI,model = model)
+     aa <- apply(grid, 1, EI, model = model)
      myMat <- matrix(aa, nrow = nGrid)
      image(x = gridAxe1, y = gridAxe2, z = myMat, 
            col = colorRampPalette(c("darkgray", "white"))(5 * 10), 
            ylab = names(design)[1], xlab = names(design)[2], 
-           main = "qEI - gradient of a batch of 4 points", axes = TRUE, 
+           main = sprintf("qEI - gradient of a batch of \%d points", q),
+           axes = TRUE, 
            zlim = c(min(myMat), max(myMat)))
      contour(x = gridAxe1, y = gridAxe2, z = myMat, 
             add = TRUE, nlevels = 10)

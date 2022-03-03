@@ -4,7 +4,7 @@
 \alias{predict.km}
 \title{Predicted values, confidence intervals}
 \usage{
-predict.km(
+\method{predict}{km}(
   object,
   newdata,
   type,

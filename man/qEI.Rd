@@ -17,43 +17,45 @@ qEI(
 )
 }
 \arguments{
-\item{x}{a matrix representing the set of input points (one row
-corresponds to one point) where to evaluate the qEI criterion.}
+\item{x}{A numeric matrix representing the set of input points
+(one row corresponds to one point) where to evaluate the qEI
+criterion.}
 
-\item{model}{an object of class \code{km}.}
+\item{model}{An object of class \code{km}.}
 
-\item{plugin}{optional scalar: if provided, it replaces the
+\item{plugin}{Optional scalar: if provided, it replaces the
 minimum of the current observations.}
 
 \item{type}{\code{"SK"} or \code{"UK"} (by default), depending
 whether uncertainty related to trend estimation has to be
 taken into account.}
 
-\item{minimization}{logical specifying if EI is used in
+\item{minimization}{Logical specifying if EI is used in
 minimiziation or in maximization.}
 
-\item{fastCompute}{if \code{TRUE}, a fast approximation method
-based on a semi-analytic formula is used. See the reference
-Marmin (2014) for details.}
+\item{fastCompute}{Logical. If \code{TRUE}, a fast approximation
+method based on a semi-analytic formula is used. See the
+reference Marmin (2014) for details.}
 
-\item{eps}{the value of \emph{epsilon} of the fast computation
+\item{eps}{Numeric value of \eqn{epsilon} in the fast computation
 trick.  Relevant only if \code{fastComputation} is
 \code{TRUE}.}
 
-\item{deriv}{logical. When \code{TRUE} the dervivatives of the
+\item{deriv}{Logical. When \code{TRUE} the dervivatives of the
 kriging mean vector and of the kriging covariance (Jacobian
 arrays) are computed and stored in the environment given in
 \code{envir}.}
 
-\item{envir}{an optional environment specifying where to get
+\item{envir}{An optional environment specifying where to get
 intermediate values calculated in \code{\link{qEI}}.}
 }
 \value{
 The multipoint Expected Improvement, defined as
-    \deqn{qEI(X_{new}) := E[ ( min(Y(X)) - min(Y( X_{new} )) )_{+}
-    | Y(X) = y(X)],}
+    \deqn{qEI(X_{new}) := E\left[\{ \min Y(X)  - \min Y(X_{new}) \}_{+}
+    \vert Y(X) = y(X) \right],}{qEI(Xnew) := E[{ min Y(X)  - min Y(Xnew) }_{+}
+    \vert Y(X) = y(X)],}
 where \eqn{X} is the current design of experiments,
-\eqn{X_new} is a new candidate design, and
+\eqn{X_new}{Xnew} is a new candidate design, and
 \eqn{Y} is a random process assumed to have generated the
 objective function \eqn{y}.
 }
@@ -64,26 +66,26 @@ Analytical expression of the multipoint expected
 \examples{
 \donttest{
 set.seed(007)
-# Monte-Carlo validation
+## Monte-Carlo validation
 
-# a 4-d, 81-points grid design, and the corresponding response
-
+## a 4-d, 81-points grid design, and the corresponding response
+## ============================================================
 d <- 4; n <- 3^d
 design <- expand.grid(rep(list(seq(0, 1, length = 3)), d))
 names(design) <- paste0("x", 1:d)
 y <- apply(design, 1, hartman4)
 
-# learning
-
+## learning
+## ========
 model <- km(~1, design = design, response = y, control = list(trace = FALSE))
 
-# pick up 10 points sampled from the 1-point expected improvement
-
+## pick up 10 points sampled from the 1-point expected improvement
+## ===============================================================
 q <- 10
 X <- sampleFromEI(model, n = q)
 
-# simulation of the minimum of the kriging random vector at X
-
+## simulation of the minimum of the kriging random vector at X
+## ===========================================================
 t1 <- proc.time()
 newdata <- as.data.frame(X)
 colnames(newdata) <- colnames(model@X)
@@ -98,31 +100,31 @@ white.noise <- rnorm(n = nsim * q)
 minYsim <- apply(crossprod(mychol, matrix(white.noise, nrow = q)) + mk,
                  MARGIN = 2, FUN = min)
 
-# simulation of the improvement (minimization)
-
+## simulation of the improvement (minimization)
+## ============================================
 qImprovement <- min(model@y) - minYsim
 qImprovement <- qImprovement * (qImprovement > 0)
 
-# empirical expectation of the improvement and confidence interval (95\%)
-
-eiMC <- mean(qImprovement)
+## empirical expectation of the improvement and confidence interval (95\%)
+## ======================================================================
+EIMC <- mean(qImprovement)
 seq <- sd(qImprovement) / sqrt(nsim)
-confInterv <- c(eiMC - 1.96 * seq, eiMC + 1.96 * seq)
+confInterv <- c(EIMC - 1.96 * seq, EIMC + 1.96 * seq)
 
 ## evaluate time
-
+## =============
 tMC <- proc.time() - t1
 
-# MC estimation of the qEI
+## MC estimation of the qEI
+## ========================
+print(EIMC) 
 
-print(eiMC) 
+## qEI with analytical formula and with fast computation trick
+## ===========================================================
+tForm <- system.time(qEI(X, model, fastCompute = FALSE))
+tFast <- system.time(qEI(X, model))
 
-# qEI with analytical formula and with fast computation trick
-
-tform <- system.time(qEI(X, model, fastCompute = FALSE))
-tfast <- system.time(qEI(X, model))
-
-rbind("MC" = tMC, "form" = tform, "fast" = tfast)
+rbind("MC" = tMC, "form" = tForm, "fast" = tFast)
 
 }
 

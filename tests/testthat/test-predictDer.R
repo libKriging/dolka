@@ -17,8 +17,6 @@ library(numDeriv)
 library(dolka)
 library(testthat)
 
-precision <- 1e-6
-
 set.seed(12345)
 n <- 16
 d <- 2
@@ -37,10 +35,10 @@ krigeStat <- function(x, object, which = stats, type = "UK", ...) {
     which <- match.arg(which)
     XNew <- matrix(x, ncol = object@d,
                    dimnames = list(NULL, colnames(object@X)))
-    p <- dolka::predict.km(object = object,
-                           which = which,
-                           cov = TRUE,
-                           newdata = XNew, type = type)[[which]]
+    p <- predict(object = object,
+                 which = which,
+                 cov = TRUE,
+                 newdata = XNew, type = type)[[which]]
     p
 }
 
@@ -69,8 +67,8 @@ colnames(XNew) <- colnames(myKm@X)
 ## Compute the Jacobian arrays with 'numDeriv'
 ## =============================================================================
 for (type in types) {
-    predNew <- dolka::predict.km(myKm, newdata = XNew, type = type,
-                             cov = TRUE, deriv = TRUE)
+    predNew <- predict(myKm, newdata = XNew, type = type,
+                       cov = TRUE, deriv = TRUE)
     for (stat in stats) {
         J <- jacobian(krigeStat, x = XNew,
                       which = stat,

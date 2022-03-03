@@ -50,7 +50,7 @@
 ##' @param diagOnly Logical. If \code{TRUE} the structure of the
 ##'     result takes into account the fact that the row \eqn{i} of the
 ##'     trend matrix \eqn{\mathbf{F}}{F} depends only on the row
-##'     \eqw{i} of the design matrix \eqn{\mathbf{X}}{X} so some
+##'     \eqn{i} of the design matrix \eqn{\mathbf{X}}{X} so some
 ##'     elements in the Jacobian array are structural zeroes and can
 ##'     be omitted. See \bold{Details}.
 ##' 
@@ -58,7 +58,9 @@
 ##'     attached as an attribute named \code{"deriv"}.
 ##'
 ##' @export
-##' 
+##' @importFrom numDeriv jacobian
+##' @importFrom stats model.matrix
+##'
 ##' @examples
 ##' library(DiceKriging)
 ##' # a 16-points factorial design, and the corresponding response
@@ -118,15 +120,15 @@ trend <- function(object, X, deriv = 0, diagOnly = FALSE) {
                            dimnames = list(NULL, colnames(FX),
                                            colnames(object@X)))
             for (i in 1:n) {
-                res <- numDeriv::jacobian(trendFun,
-                                          x = as.vector(X[i, ]),
-                                          asVector = TRUE)
+                res <- jacobian(trendFun,
+                                x = as.vector(X[i, ]),
+                                asVector = TRUE)
                 deriv[i, , ] <- attr(res, "deriv")
             }
             
         } else {
-            deriv <- numDeriv::jacobian(trendFun, x = as.vector(X),
-                                        asVector = TRUE)
+            deriv <- jacobian(trendFun, x = as.vector(X),
+                              asVector = TRUE)
             dim(deriv) <- c(n, p, n, d)
             dimnames(deriv) <- list(NULL, colnames(FX), NULL,
                                     colnames(object@X))

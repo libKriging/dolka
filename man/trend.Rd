@@ -20,7 +20,7 @@ will be an array with dimension either \code{c(n, p, n, d)} or
 \item{diagOnly}{Logical. If \code{TRUE} the structure of the
 result takes into account the fact that the row \eqn{i} of the
 trend matrix \eqn{\mathbf{F}}{F} depends only on the row
-\eqw{i} of the design matrix \eqn{\mathbf{X}}{X} so some
+\eqn{i} of the design matrix \eqn{\mathbf{X}}{X} so some
 elements in the Jacobian array are structural zeroes and can
 be omitted. See \bold{Details}.}
 }
