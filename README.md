@@ -31,7 +31,6 @@ News
 Of major importance in Bayesian optimisation, the `predict` method
 should be able to provide the derivative of the kriging mean and the
 kriging covariance w.r.t. one or several “new” design points. This is
-made possible by using the `deriv` argument.
-
-The **dolka** package can be used to overload the `predict` method for
-the class `"km"` in order to optionally get two new outputs w
+made possible by using the `deriv` argument in the `predict`method for
+the class `"km"`provided by **dolka**, which overloads the existing
+method when **dolka** is attached.
