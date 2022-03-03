@@ -83,7 +83,7 @@
 ##' @keywords models parallel optimization
 ##'
 ##' @importFrom mnormt dmnorm pmnorm
-##' @export 
+##' @export
 ##'
 ##' @examples
 ##' \donttest{

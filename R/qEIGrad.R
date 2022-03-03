@@ -147,7 +147,7 @@ HPhi <- function(x, mu, Sigma, gradient = NULL) {
 ##' @keywords models optimize
 ##'
 ##' @export 
-##'
+##' 
 ##' @examples
 ##' set.seed(15)
 ##' # Example 1 - validation by comparison to finite difference approximations

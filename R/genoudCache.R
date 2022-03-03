@@ -53,8 +53,8 @@
 ##' 
 ##' @return The result of a call to \code{\link[rgenoud]{genoud}}.
 ##'
-##' @note The optimization is expected to be faster tha
-##'     \code{link[genoud]{genoud}} if the function and its gradient
+##' @note The optimization is expected to be faster than
+##'     \code{\link[rgenoud]{genoud}} if the function and its gradient
 ##'     are costly to evaluate separately. However this may not be the
 ##'     case for quite simple functions, due to the cost of setting
 ##'     the "cache" mechanism.
@@ -69,20 +69,29 @@
 ##' @examples
 ##'
 ##' \dontrun{
-##' ## Note that in this example, gradient caching is not worth it.
+##' ## Note that in this example, gradient caching would not be worth it.
 ##' 
 ##' dom <- cbind(lower = rep(0, 2), upper = rep(0, 2))
+##' library(rgenoud)
 ##' 
 ##' ## emulate a costly-to-evaluate-alone gradient
+##' ## ===========================================
 ##' braninDer <- function(x) {
 ##'    Sys.sleep(0.01)
 ##'    braninGrad(x)$gradient
 ##' }
+##' 
+##' ## separate objective and gradient functions
+##' ## =========================================
 ##' te <- system.time(res <- genoud(fn = branin, nvars = 2, Domains = dom,
 ##'                                 gr = braninDer))
+##'
+##' ## gradient "cached"
+##' ## ================
 ##' teCache <- system.time(resCache <- genoudCache(fn = braninGrad, nvars = 2,
-##'                                           Domains = dom))
+##'                                                Domains = dom))
 ##' rbind("genoud" = te, "genoudCache" = teCache)
+##' c("genoud" = res$value, "genoudCache" = resCache$value)
 ##' }
 genoudCache <- function(fn, nvars, max = FALSE, pop.size = 1000,
                         max.generations = 100, 

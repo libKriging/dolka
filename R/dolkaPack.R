@@ -9,27 +9,27 @@
 ##'    
 ##'      \item{
 ##'
-##'         Most of the functions devoted to Keiging are to be
+##'         Most of the functions devoted to Kriging are to be
 ##'         credited to the authors of the \pkg{DiceKriging} package:
 ##'         Oliver Roustant, David Ginsbourger and Yves Deville or to
-##'         contributors: Clement Chevalier and Yann Richet.
+##'         its contributors: Clement Chevalier and Yann Richet.
 ##'
 ##'      }
 ##'
 ##'     \item {
 ##'
-##'         Most functions devoted to Bayesian Optimization are to be
-##'         credited to the authors of the \pkg{DiceOptim}: Victor
-##'         Picheny, David Ginsbourger and Olivier Roustant or to
-##'         contributors: Michael Binois, Sebastien Marmin and Tobias
-##'         Wagner.
+##'         Most of the functions devoted to Bayesian Optimization are
+##'         to be credited to the authors of the \pkg{DiceOptim}:
+##'         Victor Picheny, David Ginsbourger and Olivier Roustant or
+##'         to contributors: Michael Binois, Sebastien Marmin and
+##'         Tobias Wagner.
 ##'
 ##'      }
 ##'    
 ##'      \item {  
 ##'
-##'         Most functions devoted to kriging inversion are to be
-##'         credited to the authors of the \pkg{KrigInv} package:
+##'         Most of the functions devoted to kriging inversion are to
+##'         be credited to the authors of the \pkg{KrigInv} package:
 ##'         Clement Chevalier, Victor Picheny, David Ginsbourger and
 ##'         Dario Azzimonti.
 ##'
@@ -37,10 +37,10 @@
 ##' 
 ##'  }
 ##'
-##' @note The package is transitional meaning that it may exist only
-##'     for a quite short period. Hopefully the implemented functions
-##'     will continue to be available in other R packages in which
-##'     they will be included.
+##' @note The package is \emph{transitional}, meaning that it may
+##'     exist only for a quite short period. Hopefully the implemented
+##'     functions will continue to be available in other R packages in
+##'     which they will be included.
 ##'     
 ##' @docType package
 ##' @name dolka-package
