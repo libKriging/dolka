@@ -16,10 +16,10 @@
 ##'
 ##' @param type \code{"UK"} (default) or \code{"SK"}, depending
 ##'     whether uncertainty related to trend estimation has to be
-##'     taken into account,
+##'     taken into account.
 ##'
 ##' @param minimization Logical specifying if EI is used in
-##'     minimiziation or in maximization,
+##'     minimiziation or in maximization.
 ##'
 ##' @param envir An optional environment specifying where to assign
 ##'     intermediate values for future gradient calculations. Default
@@ -182,28 +182,30 @@ EI <- function (x, model, plugin = NULL, type = c("UK", "SK"),
 ##'     can be replaced by an arbitrary value (plugin), which is
 ##'     useful in particular in noisy frameworks.
 ##' 
-##' @param x a vector representing the input for which one wishes to
+##' @param x A vector representing the input for which one wishes to
 ##'     calculate \code{\link{EI}}.
 ##'
-##' @param model an object of class \code{\link[DiceKriging]{km}}.
+##' @param model An object of class \code{\link[DiceKriging]{km}}.
 ##'
-##' @param plugin optional scalar: if provided, it replaces the
-##'     minimum of the current observations,
+##' @param plugin Optional scalar: if provided, it replaces the
+##'     minimum of the current observations.
 ##'
-##' @param type Kriging type: "SK" or "UK"
+##' @param type Character \code{"UK"} (default) or \code{"SK"},
+##'     depending whether uncertainty related to trend estimation has
+##'     to be taken into account.
+##' 
+##' @param minimization Logical specifying if EI is used in
+##'     minimiziation or in maximization.
 ##'
-##' @param minimization logical specifying if EI is used in
-##'     minimiziation or in maximization,
-##'
-##' @param envir an optional environment specifying where to get
+##' @param envir Optional environment specifying where to get
 ##'     intermediate values calculated in \code{\link{EI}}.
 ##'
-##' @param proxy an optional Boolean, if TRUE EI is replaced by the
-##'     kriging mean (to minimize)
+##' @param proxy Optional logical. If \code{TRUE}, EI is replaced by the
+##'     kriging mean (to minimize).
 ##'
 ##' @return The gradient of the expected improvement criterion with
-##'     respect to x.  Returns 0 at design points (where the gradient
-##'     does not exist).
+##'     respect to \eqn{x}.  Returns 0 at design points (where the
+##'     gradient does not exist).
 ##'
 ##' @author David Ginsbourger, Olivier Roustant and Victor Picheny.
 ##' 
@@ -287,10 +289,12 @@ EI <- function (x, model, plugin = NULL, type = c("UK", "SK"),
 ##' 	}
 ##' }
 ##' 
-EI.grad <- function(x, model, plugin = NULL, type = "UK",
+EI.grad <- function(x, model, plugin = NULL, type = c("UK", "SK"),
                     minimization = TRUE, envir = NULL,
                     proxy = FALSE){ 
 
+    type <- match.arg(type)
+    
     ## =========================================================================
     if (is.null(plugin)){ 
         if (minimization) plugin <- min(model@y)

@@ -25,10 +25,10 @@ minimum of the current observations.}
 
 \item{type}{\code{"UK"} (default) or \code{"SK"}, depending
 whether uncertainty related to trend estimation has to be
-taken into account,}
+taken into account.}
 
 \item{minimization}{Logical specifying if EI is used in
-minimiziation or in maximization,}
+minimiziation or in maximization.}
 
 \item{envir}{An optional environment specifying where to assign
 intermediate values for future gradient calculations. Default

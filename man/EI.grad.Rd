@@ -8,36 +8,38 @@ EI.grad(
   x,
   model,
   plugin = NULL,
-  type = "UK",
+  type = c("UK", "SK"),
   minimization = TRUE,
   envir = NULL,
   proxy = FALSE
 )
 }
 \arguments{
-\item{x}{a vector representing the input for which one wishes to
+\item{x}{A vector representing the input for which one wishes to
 calculate \code{\link{EI}}.}
 
-\item{model}{an object of class \code{\link[DiceKriging]{km}}.}
+\item{model}{An object of class \code{\link[DiceKriging]{km}}.}
 
-\item{plugin}{optional scalar: if provided, it replaces the
-minimum of the current observations,}
+\item{plugin}{Optional scalar: if provided, it replaces the
+minimum of the current observations.}
 
-\item{type}{Kriging type: "SK" or "UK"}
+\item{type}{Character \code{"UK"} (default) or \code{"SK"},
+depending whether uncertainty related to trend estimation has
+to be taken into account.}
 
-\item{minimization}{logical specifying if EI is used in
-minimiziation or in maximization,}
+\item{minimization}{Logical specifying if EI is used in
+minimiziation or in maximization.}
 
-\item{envir}{an optional environment specifying where to get
+\item{envir}{Optional environment specifying where to get
 intermediate values calculated in \code{\link{EI}}.}
 
-\item{proxy}{an optional Boolean, if TRUE EI is replaced by the
-kriging mean (to minimize)}
+\item{proxy}{Optional logical. If \code{TRUE}, EI is replaced by the
+kriging mean (to minimize).}
 }
 \value{
 The gradient of the expected improvement criterion with
-    respect to x.  Returns 0 at design points (where the gradient
-    does not exist).
+    respect to \eqn{x}.  Returns 0 at design points (where the
+    gradient does not exist).
 }
 \description{
 Computes the gradient of the Expected Improvement at
