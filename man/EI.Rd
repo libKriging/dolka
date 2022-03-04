@@ -26,8 +26,10 @@ EI.grad(
 )
 }
 \arguments{
-\item{x}{A vector representing the input for which one wishes to
-calculate EI.}
+\item{x}{A numeric vector representing the input for which one
+wishes to calculate EI. The length \eqn{d} of this vector must
+be equal to \eqn{d}, the dimension of the input space used for
+the kriging results in \code{model}.}
 
 \item{model}{An object of class \code{\link[DiceKriging]{km}}.}
 
@@ -49,9 +51,11 @@ is \code{NULL}.}
 the kriging mean, to be \emph{minimized}.}
 }
 \value{
-The expected improvement as defined in \bold{Details}.
-    If \code{plugin} is specified, its provided value will replace
-    \eqn{\min Y(X)}{min Y(X)} in the formula.
+The expected improvement as defined in \bold{Details}
+    (for \code{EI}) or its gradient (for \code{EI.grad}).  If
+    \code{plugin} is specified, its provided value will replace
+    \eqn{\min Y(X)}{min Y(X)} in the formula. The EI and its
+    gradient are numeric vectors with length \eqn{1} and \eqn{d}.
 }
 \description{
 The function \code{EI} computes the Expected

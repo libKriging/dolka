@@ -79,6 +79,7 @@
 ##' 
 ##' ## Contours only
 ##' ## =============
+##' contours(model) + ggtitle("kriging mean (default in 'contours')")
 ##' contours(model, other = "branin") + ggtitle("'branin' and kriging mean")
 ##' contours(model, which = c("mean", "trend")) + ggtitle("Kriging mean and trend")
 ##' contours(model, which = "sd") + ggtitle("Kriging sd")
@@ -302,7 +303,7 @@ contours <- function(object,
         geom_point(data = as.data.frame(object@X),
                    mapping = aes(x = x1, y = x2),
                    size = 3) +
-        facet_grid(which ~ ., scales = "free") 
+        facet_grid(which ~ ., scales = "free")  
     v
 }
                

@@ -96,6 +96,7 @@ model <- km(~1, design = design, response = y)
 
 ## Contours only
 ## =============
+contours(model) + ggtitle("kriging mean (default in 'contours')")
 contours(model, other = "branin") + ggtitle("'branin' and kriging mean")
 contours(model, which = c("mean", "trend")) + ggtitle("Kriging mean and trend")
 contours(model, which = "sd") + ggtitle("Kriging sd")
