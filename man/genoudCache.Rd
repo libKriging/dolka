@@ -168,12 +168,17 @@ braninDer <- function(x) {
 
 ## separate objective and gradient functions
 ## =========================================
-te <- system.time(res <- genoud(fn = branin, nvars = 2, Domains = dom,
+te <- system.time(res <- genoud(fn = branin, nvars = 2,
+                                unif.seed = 123,
+                                int.seed = 456,
+                                Domains = dom,
                                 gr = braninDer))
 
 ## gradient "cached"
 ## ================
 teCache <- system.time(resCache <- genoudCache(fn = braninGrad, nvars = 2,
+                                               unif.seed = 123,
+                                               int.seed = 456,
                                                Domains = dom))
 rbind("genoud" = te, "genoudCache" = teCache)
 c("genoud" = res$value, "genoudCache" = resCache$value)

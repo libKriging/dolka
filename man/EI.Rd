@@ -2,9 +2,20 @@
 % Please edit documentation in R/EI.R
 \name{EI}
 \alias{EI}
-\title{Analytical expression of the Expected Improvement criterion}
+\alias{EI.grad}
+\title{Expected Improvement Criterion and its Gradient}
 \usage{
 EI(
+  x,
+  model,
+  plugin = NULL,
+  type = c("UK", "SK"),
+  minimization = TRUE,
+  envir = NULL,
+  proxy = FALSE
+)
+
+EI.grad(
   x,
   model,
   plugin = NULL,
@@ -16,7 +27,7 @@ EI(
 }
 \arguments{
 \item{x}{A vector representing the input for which one wishes to
-calculate EI,}
+calculate EI.}
 
 \item{model}{An object of class \code{\link[DiceKriging]{km}}.}
 
@@ -28,35 +39,46 @@ whether uncertainty related to trend estimation has to be
 taken into account.}
 
 \item{minimization}{Logical specifying if EI is used in
-minimiziation or in maximization.}
+minimization or in maximization.}
 
 \item{envir}{An optional environment specifying where to assign
 intermediate values for future gradient calculations. Default
 is \code{NULL}.}
 
-\item{proxy}{Optional logical. If \code{TRUE} EI is replaced by
+\item{proxy}{Optional logical. If \code{TRUE}, EI is replaced by
 the kriging mean (to minimize).}
 }
 \value{
-The expected improvement, defined as \deqn{EI(x) := E[(
-    min(Y(X)) - Y(x))^{+} | Y(X)=y(X)],} where X is the current
-    design of experiments and Y is the random process assumed to
-    have generated the objective function y.  If a plugin is
-    specified, it replaces \deqn{min(Y(X))} in the previous
-    formula.
+The expected improvement as defined in \bold{Details}.
+    If \code{plugin} is specified, its provided value will replace
+    \eqn{\min Y(X)}{min Y(X)} in the formula.
 }
 \description{
-Computes the Expected Improvement at current
-    location. The current minimum of the observations can be
-    replaced by an arbitrary value (plugin), which is useful in
-    particular in noisy frameworks.
+The function \code{EI} computes the Expected
+    Improvement at current location \code{x} while \code{EI.grad}
+    compute the gradient at \code{x}. The current minimum of the
+    observations in \code{model} can be replaced by an arbitrary
+    value (plugin), which is useful in particular in noisy
+    frameworks.
+}
+\details{
+The Expected Improvement (EI) is defined as \deqn{EI(x)
+    := E\left[\{\min Y(X) - Y(x)\}_+ | Y(X) = y(X) \right],}{ E[{
+    min Y(X) - Y(x) }_+ | Y(X) = y(X)]} where \eqn{X} is the
+    current design of experiments and \eqn{Y} is the random
+    process assumed to have generated the objective function
+    \eqn{y} and \eqn{z_{+} := \max\{z, \, 0)}{z_+ = max(z, 0)}
+    denotes the positive part of a real number \eqn{z}. The value
+    of EI is non-negative but can be numerically zero close to the
+    inputs used in \code{model}. The EI and its gradient are
+    computed using their closed forms.
 }
 \examples{
 set.seed(123)
 ## =========================================================================
 ## 	EI Surface Associated with an Ordinary Kriging Model for the Branin    
 ##  Function Known at a 9-Points Factorial Design  
-## ========================================================================
+## =========================================================================
 
 ## a 9-points factorial design, and the corresponding response
 ## ===========================================================
@@ -70,20 +92,27 @@ y <- apply(design.fact, 1, branin)
 fit1 <- km(~1, design = design.fact, response = y, covtype = "gauss",
            control = list(pop.size = 50, trace = FALSE), parinit = c(0.5, 0.5))
 
+## computing the EI
+## ================
+x <- c(x1 = 0.2, x2 = 0.4)
+EI(x, model = fit1)
+EI.grad(x, model = fit1)
+
 ## graphics
-## =========
-n.grid <- 12
-x.grid <- y.grid <- seq(0, 1, length = n.grid)
-design.grid <- expand.grid(x.grid, y.grid)
-#response.grid <- apply(design.grid, 1, branin)
-EI.grid <- apply(design.grid, MARGIN = 1, FUN = EI, model = fit1)
-z.grid <- matrix(EI.grid, nrow = n.grid, ncol = n.grid)
-contour(x.grid, y.grid, z.grid, nlevels = 25)
-title("Expected Improvement for the Branin function known at 9 points")
-points(design.fact[ , 1], design.fact[ , 2], pch = 17, col = "blue")
+## ========
+contours(object = fit1, which = character(0), grad = TRUE,
+         other = "EI", otherGrad = "EI.grad",
+         whereGrad = "grid", nGrid = 30) +
+    ggtitle("Expected Improvement and its gradient")
+
 
 }
 \references{
+D. Ginsbourger (2009), \emph{Multiples métamodèles pour
+l'approximation et l'optimisation de fonctions numériques
+multivariables}, Ph.D. thesis, Ècole Nationale Supérieure des
+Mines de Saint-Ètienne.
+
 D.R. Jones, M. Schonlau, and W.J. Welch (1998), Efficient global
 optimization of expensive black-box functions, \emph{Journal of Global
 Optimization}, 13, 455-492.
@@ -98,9 +127,11 @@ M. Schonlau (1997), \emph{Computer experiments and global
 optimization}, Ph.D. thesis, University of Waterloo.
 }
 \seealso{
-\code{\link{max_EI}}, \code{\link{EGO.nsteps}}, \code{\link{qEI}}
+\code{\link{max_EI}}, \code{\link{EGO.nsteps}},
+    \code{\link{qEI}}
 }
 \author{
 David Ginsbourger, Olivier Roustant and Victor Picheny.
 }
 \keyword{models}
+\keyword{optimize}

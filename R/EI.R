@@ -1,13 +1,26 @@
-##' @title Analytical expression of the Expected Improvement criterion
+##' @title Expected Improvement Criterion and its Gradient
 ##' 
-##' @description Computes the Expected Improvement at current
-##'     location. The current minimum of the observations can be
-##'     replaced by an arbitrary value (plugin), which is useful in
-##'     particular in noisy frameworks.
+##' @description The function \code{EI} computes the Expected
+##'     Improvement at current location \code{x} while \code{EI.grad}
+##'     compute the gradient at \code{x}. The current minimum of the
+##'     observations in \code{model} can be replaced by an arbitrary
+##'     value (plugin), which is useful in particular in noisy
+##'     frameworks.
+##'
+##' @details The Expected Improvement (EI) is defined as \deqn{EI(x)
+##'     := E\left[\{\min Y(X) - Y(x)\}_+ | Y(X) = y(X) \right],}{ E[{
+##'     min Y(X) - Y(x) }_+ | Y(X) = y(X)]} where \eqn{X} is the
+##'     current design of experiments and \eqn{Y} is the random
+##'     process assumed to have generated the objective function
+##'     \eqn{y} and \eqn{z_{+} := \max\{z, \, 0)}{z_+ = max(z, 0)}
+##'     denotes the positive part of a real number \eqn{z}. The value
+##'     of EI is non-negative but can be numerically zero close to the
+##'     inputs used in \code{model}. The EI and its gradient are
+##'     computed using their closed forms.
 ##' 
 ##' 
 ##' @param x A vector representing the input for which one wishes to
-##'     calculate EI,
+##'     calculate EI.
 ##'
 ##' @param model An object of class \code{\link[DiceKriging]{km}}.
 ##'
@@ -19,29 +32,31 @@
 ##'     taken into account.
 ##'
 ##' @param minimization Logical specifying if EI is used in
-##'     minimiziation or in maximization.
+##'     minimization or in maximization.
 ##'
 ##' @param envir An optional environment specifying where to assign
 ##'     intermediate values for future gradient calculations. Default
 ##'     is \code{NULL}.
 ##'
-##' @param proxy Optional logical. If \code{TRUE} EI is replaced by
+##' @param proxy Optional logical. If \code{TRUE}, EI is replaced by
 ##'     the kriging mean (to minimize).
 ##' 
-##' @return The expected improvement, defined as \deqn{EI(x) := E[(
-##'     min(Y(X)) - Y(x))^{+} | Y(X)=y(X)],} where X is the current
-##'     design of experiments and Y is the random process assumed to
-##'     have generated the objective function y.  If a plugin is
-##'     specified, it replaces \deqn{min(Y(X))} in the previous
-##'     formula.
+##' @return The expected improvement as defined in \bold{Details}.
+##'     If \code{plugin} is specified, its provided value will replace
+##'     \eqn{\min Y(X)}{min Y(X)} in the formula.
 ##'
 ##' @export EI
 ##'
 ##' @author David Ginsbourger, Olivier Roustant and Victor Picheny.
 ##'
-##' @seealso \code{\link{max_EI}}, \code{\link{EGO.nsteps}}, \code{\link{qEI}}
+##' @seealso \code{\link{max_EI}}, \code{\link{EGO.nsteps}},
+##'     \code{\link{qEI}}
 ##'
 ##' @references
+##' D. Ginsbourger (2009), \emph{Multiples métamodèles pour
+##' l'approximation et l'optimisation de fonctions numériques
+##' multivariables}, Ph.D. thesis, Ècole Nationale Supérieure des
+##' Mines de Saint-Ètienne.
 ##' 
 ##' D.R. Jones, M. Schonlau, and W.J. Welch (1998), Efficient global
 ##' optimization of expensive black-box functions, \emph{Journal of Global
@@ -63,7 +78,7 @@
 ##' ## =========================================================================
 ##' ## 	EI Surface Associated with an Ordinary Kriging Model for the Branin    
 ##' ##  Function Known at a 9-Points Factorial Design  
-##' ## ========================================================================
+##' ## =========================================================================
 ##' 
 ##' ## a 9-points factorial design, and the corresponding response
 ##' ## ===========================================================
@@ -76,18 +91,20 @@
 ##' ## =========
 ##' fit1 <- km(~1, design = design.fact, response = y, covtype = "gauss",
 ##'            control = list(pop.size = 50, trace = FALSE), parinit = c(0.5, 0.5))
+##'
+##' ## computing the EI
+##' ## ================
+##' x <- c(x1 = 0.2, x2 = 0.4)
+##' EI(x, model = fit1)
+##' EI.grad(x, model = fit1)
 ##' 
 ##' ## graphics
-##' ## =========
-##' n.grid <- 12
-##' x.grid <- y.grid <- seq(0, 1, length = n.grid)
-##' design.grid <- expand.grid(x.grid, y.grid)
-##' #response.grid <- apply(design.grid, 1, branin)
-##' EI.grid <- apply(design.grid, MARGIN = 1, FUN = EI, model = fit1)
-##' z.grid <- matrix(EI.grid, nrow = n.grid, ncol = n.grid)
-##' contour(x.grid, y.grid, z.grid, nlevels = 25)
-##' title("Expected Improvement for the Branin function known at 9 points")
-##' points(design.fact[ , 1], design.fact[ , 2], pch = 17, col = "blue")
+##' ## ========
+##' contours(object = fit1, which = character(0), grad = TRUE,
+##'          other = "EI", otherGrad = "EI.grad",
+##'          whereGrad = "grid", nGrid = 30) +
+##'     ggtitle("Expected Improvement and its gradient")
+##' 
 ##' 
 EI <- function (x, model, plugin = NULL, type = c("UK", "SK"),
                 minimization = TRUE, envir = NULL,
@@ -139,7 +156,7 @@ EI <- function (x, model, plugin = NULL, type = c("UK", "SK"),
         pred <- predict(object = model, newdata = newdata, type = type,
                         checkNames = FALSE, light.return = TRUE)
     }
-  
+
     kriging.mean <- pred$mean
     if(!minimization) {
         kriging.mean <- -kriging.mean
@@ -174,120 +191,12 @@ EI <- function (x, model, plugin = NULL, type = c("UK", "SK"),
 
 
 ## =============================================================================
-##'
-##' @title Analytical gradient of the Expected Improvement criterion
-##' 
-##' @description Computes the gradient of the Expected Improvement at
-##'     the current location.  The current minimum of the observations
-##'     can be replaced by an arbitrary value (plugin), which is
-##'     useful in particular in noisy frameworks.
-##' 
-##' @param x A vector representing the input for which one wishes to
-##'     calculate \code{\link{EI}}.
-##'
-##' @param model An object of class \code{\link[DiceKriging]{km}}.
-##'
-##' @param plugin Optional scalar: if provided, it replaces the
-##'     minimum of the current observations.
-##'
-##' @param type Character \code{"UK"} (default) or \code{"SK"},
-##'     depending whether uncertainty related to trend estimation has
-##'     to be taken into account.
-##' 
-##' @param minimization Logical specifying if EI is used in
-##'     minimiziation or in maximization.
-##'
-##' @param envir Optional environment specifying where to get
-##'     intermediate values calculated in \code{\link{EI}}.
-##'
-##' @param proxy Optional logical. If \code{TRUE}, EI is replaced by the
-##'     kriging mean (to minimize).
-##'
-##' @return The gradient of the expected improvement criterion with
-##'     respect to \eqn{x}.  Returns 0 at design points (where the
-##'     gradient does not exist).
-##'
-##' @author David Ginsbourger, Olivier Roustant and Victor Picheny.
-##' 
-##' @seealso \code{\link{EI}}
-##'
-##' @section Caution: XXX the code uses \code{model@covariance@s2}
-##'     which may not exist if some other class of object or even of
-##'     covariance is used.
-##' 
-##' @references
-##' 
-##' D. Ginsbourger (2009), \emph{Multiples metamodeles pour
-##' l'approximation et l'optimisation de fonctions numeriques
-##' multivariables}, Ph.D. thesis, Ecole Nationale Superieure des
-##' Mines de Saint-Etienne, 2009.
-##' 
-##' J. Mockus (1988), \emph{Bayesian Approach to Global
-##' Optimization}. Kluwer academic publishers.
-##' 
-##' T.J. Santner, B.J. Williams, and W.J. Notz (2003), \emph{The
-##' design and analysis of computer experiments}, Springer.
-##' 
-##' M. Schonlau (1997), \emph{Computer experiments and global
-##' optimization}, Ph.D. thesis, University of Waterloo.
-##'
 ##' @keywords models optimize
 ##'
 ##' @export EI.grad
 ##' @importFrom stats pnorm
+##' @rdname EI
 ##' 
-##' @examples
-##' set.seed(123)
-##' ## =========================================================================
-##' ## 	EI Surface Associated with an Ordinary Kriging Model for the Branin    
-##' ##  Function Known at a 9-Points Factorial Design  
-##' ## ========================================================================
-##' 
-##' ## a 9-points factorial design, and the corresponding response
-##' ## ===========================================================
-##' d <- 2; n <- 9
-##' design.fact <- expand.grid(x1 = seq(0, 1, length=3), x2 = seq(0, 1, length=3))
-##' y <- apply(design.fact, 1, branin) 
-##' 
-##' ## model fit
-##' ## =========
-##' fit1 <- km(~1, design = design.fact, response = y, covtype = "gauss",
-##'            control = list(pop.size = 50, trace = FALSE), parinit = c(0.5, 0.5))
-##'
-##' ## graphics
-##' ## ========
-##' n.grid <- 9  # Increase to 50 for a nicer picture
-##' x.grid <- y.grid <- seq(0, 1, length = n.grid)
-##' design.grid <- expand.grid(x1 = x.grid, x2 = y.grid)
-##' EI.grid <- apply(design.grid, MARGIN = 1, FUN = EI, model = fit1)
-##' 
-##' z.grid <- matrix(EI.grid, n.grid, n.grid)
-##' 
-##' contour(x.grid, y.grid, z.grid, 20)
-##' title("Expected Improvement for the Branin function known at 9 points")
-##' points(design.fact[ , 1], design.fact[ , 2], pch = 17, col = "blue")
-##' 
-##' # graphics
-##' n.gridx <- 5  # increase to 15 for nicer picture
-##' n.gridy <- 5  # increase to 15 for nicer picture
-##' x.grid2 <- seq(0, 1, length = n.gridx) 
-##' y.grid2 <- seq(0, 1, length = n.gridy) 
-##' design.grid2 <- expand.grid(x1 = x.grid2, x2 = y.grid2)
-##' 
-##' EI.envir <- new.env()	
-##' environment(EI) <- environment(EI.grad) <- EI.envir 
-##'
-##' for(i in 1:nrow(design.grid2)) {
-##' 	x <- design.grid2[i,  ]
-##' 	ei <- EI(x, model = fit1, envir = EI.envir)
-##' 	eigrad <- EI.grad(x , model = fit1, envir = EI.envir)
-##' 	if (!(is.null(ei))) {
-##' 	suppressWarnings(arrows(x$x1, x$x2,
-##' 	   x$x1 + eigrad[1] * 2.2 * 1e-4,
-##'        x$x2 + eigrad[2] * 2.2 * 1e-4, 
-##' 	   length = 0.04, code = 2, col = "orange", lwd = 2))
-##' 	}
-##' }
 ##' 
 EI.grad <- function(x, model, plugin = NULL, type = c("UK", "SK"),
                     minimization = TRUE, envir = NULL,
@@ -296,7 +205,7 @@ EI.grad <- function(x, model, plugin = NULL, type = c("UK", "SK"),
     type <- match.arg(type)
     
     ## =========================================================================
-    if (is.null(plugin)){ 
+    if (is.null(plugin)) { 
         if (minimization) plugin <- min(model@y)
         else plugin <- -max(model@y)
     }
@@ -332,8 +241,8 @@ EI.grad <- function(x, model, plugin = NULL, type = c("UK", "SK"),
         ## Note that we do not need kriging.mean
         pred <- envir$pred
         xcr <- envir$xcr
-        xcr.prob   <- envir$xcr.prob
-        xcr.dens   <- envir$xcr.dens
+        xcr.prob <- envir$xcr.prob
+        xcr.dens <- envir$xcr.dens
         kriging.sd <- pred$sd
 
     }
@@ -347,12 +256,12 @@ EI.grad <- function(x, model, plugin = NULL, type = c("UK", "SK"),
     } else  { 
     
         kriging.mean.grad <- as.vector(pred$mean.deriv)
-        if (!minimization) kriging.mean.grad <- -kriging.mean.grad
+        if (!minimization) kriging.mean.grad <- - kriging.mean.grad
         
         if (proxy) {
             EI.grad <- - kriging.mean.grad
         } else {
-            kriging.sd.grad <- pred$sd.deriv
+            kriging.sd.grad <- as.vector(pred$sd.deriv)
             EI.grad <- - kriging.mean.grad * xcr.prob + kriging.sd.grad * xcr.dens
         }
     }
