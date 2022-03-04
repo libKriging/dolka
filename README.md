@@ -1,9 +1,9 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-dolka package
-=============
+R package dolka
+===============
 
-**dolka** is a transitional package aimed at helping to use
+**dolka** is a transitional R package aimed at helping to use
 **rlibkriging** as an alternative to **DiceKriging** when doing Bayesian
 optimization with **DiceOptim** or when performing kriging inversion
 with **KrigInv**.

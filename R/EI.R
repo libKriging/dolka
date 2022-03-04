@@ -39,7 +39,7 @@
 ##'     is \code{NULL}.
 ##'
 ##' @param proxy Optional logical. If \code{TRUE}, EI is replaced by
-##'     the kriging mean (to minimize).
+##'     the kriging mean, to be \emph{minimized}.
 ##' 
 ##' @return The expected improvement as defined in \bold{Details}.
 ##'     If \code{plugin} is specified, its provided value will replace

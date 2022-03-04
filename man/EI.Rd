@@ -46,7 +46,7 @@ intermediate values for future gradient calculations. Default
 is \code{NULL}.}
 
 \item{proxy}{Optional logical. If \code{TRUE}, EI is replaced by
-the kriging mean (to minimize).}
+the kriging mean, to be \emph{minimized}.}
 }
 \value{
 The expected improvement as defined in \bold{Details}.
