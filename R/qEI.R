@@ -1,8 +1,10 @@
-
+## =============================================================================
+##
 ##' @description Analytical expression of the multipoint expected
-##'     improvement (qEI) criterion
+##'     improvement criterion, also known as the \eqn{q}-\emph{point
+##'     expected improvement} and denoted by \eqn{q}-EI or \code{qEI}.
 ##' 
-##' @title Computes the multipoint expected improvement criterion.
+##' @title Computes the Multipoint Expected Improvement (qEI) Criterion
 ##'  
 ##' @param x A numeric matrix representing the set of input points
 ##'     (one row corresponds to one point) where to evaluate the qEI

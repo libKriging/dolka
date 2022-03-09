@@ -3,7 +3,7 @@
 \docType{package}
 \name{dolka-package}
 \alias{dolka-package}
-\title{Utility functions for Bayesian optimization}
+\title{Utility Functions for Bayesian Optimization}
 \description{
 Transitional package for Bayes Optimization using
     either \pkg{DiceKriging} or \pkg{rlikriging} for the kriging
@@ -12,8 +12,7 @@ Transitional package for Bayes Optimization using
 \note{
 The package is \emph{transitional}, meaning that it may
     exist only for a quite short period. Hopefully the implemented
-    functions will continue to be available in other R packages in
-    which they will be included.
+    functions may continue to be available in other R packages.
 }
 \section{Authors}{
 
@@ -23,7 +22,7 @@ The package is \emph{transitional}, meaning that it may
 
         Most of the functions devoted to Kriging are to be
         credited to the authors of the \pkg{DiceKriging} package:
-        Oliver Roustant, David Ginsbourger and Yves Deville or to
+        Oliver Roustant, David Ginsbourger and Yves Deville, or to
         its contributors: Clement Chevalier and Yann Richet.
 
      }
@@ -46,6 +45,10 @@ The package is \emph{transitional}, meaning that it may
         Dario Azzimonti.
 
      }
+
+     Yves Deville performed some refactoring of the functions and
+     of their examples. Note that this can result in new errors. In
+     case of doubt, use the original packages.
 
  }
 }

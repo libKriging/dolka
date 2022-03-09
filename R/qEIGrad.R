@@ -66,10 +66,10 @@ HPhi <- function(x, mu, Sigma, gradient = NULL) {
 }
 
 ## *****************************************************************************
-##' @description Compute an exact or approximate gradient of the
+##' @description Compute an exact or approximate radient of the
 ##'     multipoint expected improvement criterion.
 ##' 
-##' @title Gradient of the multipoint expected improvement (qEI) criterion
+##' @title Gradient of the Multipoint Expected Improvement (qEI) Criterion
 ##' 
 ##' @param x a matrix representing the set of input points (one row corresponds
 ##' to one point) where to evaluate the gradient,

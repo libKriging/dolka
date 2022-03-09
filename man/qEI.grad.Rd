@@ -2,7 +2,7 @@
 % Please edit documentation in R/qEIGrad.R
 \name{qEI.grad}
 \alias{qEI.grad}
-\title{Gradient of the multipoint expected improvement (qEI) criterion}
+\title{Gradient of the Multipoint Expected Improvement (qEI) Criterion}
 \usage{
 qEI.grad(
   x,
@@ -48,7 +48,7 @@ The gradient of the multipoint expected improvement
     gradient does not exist in these cases).
 }
 \description{
-Compute an exact or approximate gradient of the
+Compute an exact or approximate radient of the
     multipoint expected improvement criterion.
 }
 \section{Caution}{

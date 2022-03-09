@@ -19,7 +19,7 @@
 ##' attribute of the Jacobian matrix, we get the Jacobian array as
 ##' described.
 ##' 
-##' @title Predicted values, confidence intervals
+##' @title PredictedValues and Confidence Intervals
 ##'
 ##' @param object,newdata,type see
 ##'     \code{\link[DiceKriging]{predict.km}}.

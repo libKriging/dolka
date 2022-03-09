@@ -2,7 +2,7 @@
 % Please edit documentation in R/qEI.R
 \name{qEI}
 \alias{qEI}
-\title{Computes the multipoint expected improvement criterion.}
+\title{Computes the Multipoint Expected Improvement (qEI) Criterion}
 \usage{
 qEI(
   x,
@@ -61,7 +61,8 @@ objective function \eqn{y}.
 }
 \description{
 Analytical expression of the multipoint expected
-    improvement (qEI) criterion
+    improvement criterion, also known as the \eqn{q}-\emph{point
+    expected improvement} and denoted by \eqn{q}-EI or \code{qEI}.
 }
 \examples{
 \donttest{

@@ -20,8 +20,13 @@
 ##' @param object An object with class \code{"km"} or equivalent
 ##'     with two inputs.
 ##' 
-##' @param which Character. Name of the kriging function/statistic to
-##'     be shown.
+##' @param which Character vector. Name of the kriging
+##'     function(s)/statistic(s) to be shown. Can contain
+##'     \code{"mean"}, \code{"trend"}, \code{"sd"}, \code{"sd2"} or
+##'     \code{"var"}. Can have length 0 as well, in order to display
+##'     the contours of a function having or not a formal argument
+##'     \code{object}. This function is then provided by using
+##'     \code{other}.
 ##' 
 ##' @param other Character. Name of a function. This can be a function
 ##'     to be compared to the stat(s) given in \code{which} (usually

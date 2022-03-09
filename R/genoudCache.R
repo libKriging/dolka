@@ -7,6 +7,11 @@
 ##'     with length \eqn{d} to be provided by \code{fn}. The R
 ##'     function \code{fn} must provide the values of the objective
 ##'     and its gradient.
+##'
+##'     The formal arguments of this function and their default values
+##'     are those of gthe \code{\link[rgenoud]{genoud}} function at
+##'     the time when this function is written, based on
+##'     version \code{5.8.3.0} of \pkg{rgenoud}.
 ##' 
 ##' @title Run the \code{genoud} Optimization Function with a Cached
 ##'     Gradient
@@ -23,6 +28,7 @@
 ##' @param Domains See \code{\link[rgenoud]{genoud}}.
 ##' @param default.domains See \code{\link[rgenoud]{genoud}}.
 ##' @param solution.tolerance See \code{\link[rgenoud]{genoud}}.
+##' @param gr \bold{Can not be used}. This argument is for compatibility 
 ##' @param boundary.enforcement See \code{\link[rgenoud]{genoud}}.
 ##' @param lexical See \code{\link[rgenoud]{genoud}}.
 ##' @param gradient.check See \code{\link[rgenoud]{genoud}}.
@@ -71,7 +77,7 @@
 ##' \dontrun{
 ##' ## Note that in this example, gradient caching would not be worth it.
 ##' 
-##' dom <- cbind(lower = rep(0, 2), upper = rep(0, 2))
+##' dom <- cbind(lower = rep(0.0, 2), upper = rep(1.0, 2))
 ##' library(rgenoud)
 ##' 
 ##' ## emulate a costly-to-evaluate-alone gradient
@@ -91,94 +97,144 @@
 ##'
 ##' ## gradient "cached"
 ##' ## ================
-##' teCache <- system.time(resCache <- genoudCache(fn = braninGrad, nvars = 2,
-##'                                                unif.seed = 123,
-##'                                                int.seed = 456,
-##'                                                Domains = dom))
-##' rbind("genoud" = te, "genoudCache" = teCache)
-##' c("genoud" = res$value, "genoudCache" = resCache$value)
+##' teCache <- system.time(resCache <- genoud_cache(fn = braninGrad, nvars = 2,
+##'                                                 unif.seed = 123,
+##'                                                 int.seed = 456,
+##'                                                 Domains = dom))
+##' rbind("genoud" = te, "genoud_cache" = teCache)
+##' c("genoud" = res$value, "genoud_cache" = resCache$value)
+##'
+##' ## Check the use of ...
+##' ## ====================
+##' braninShift <- function(x, shift = 0) {
+##'     res <- braninGrad(x)
+##'     res$objective <- res$objective + shift
+##'     res
+##'  }
+##'  resShifted <- genoud_cache(fn = braninShift, nvars = 2,
+##'                             unif.seed = 123,
+##'                             int.seed = 456,
+##'                             Domains = dom,
+##'                             shift = 100)
+##' c("genoud_cache" = resCache$value, "genoudShifted" = resShifted$value - 100)
 ##' }
-genoudCache <- function(fn, nvars, max = FALSE, pop.size = 1000,
-                        max.generations = 100, 
-                        wait.generations = 10,
-                        hard.generation.limit = TRUE,
-                        starting.values = NULL, 
-                        MemoryMatrix = TRUE,
-                        Domains = NULL,
-                        default.domains = 10, 
-                        solution.tolerance = 0.001,
-                        ## gr = NULL,
-                        boundary.enforcement = 0, 
-                        lexical = FALSE,
-                        gradient.check = TRUE,
-                        BFGS = TRUE,
-                        data.type.int = FALSE, 
-                        hessian = FALSE,
-                        unif.seed = round(runif(1, 1, 2147483647L)), 
-                        int.seed = round(runif(1, 1, 2147483647L)),
-                        print.level = 2, 
-                        share.type = 0,
-                        instance.number = 0,
-                        output.path = "stdout", 
-                        output.append = FALSE,
-                        project.path = NULL,
-                        P1 = 50, P2 = 50, P3 = 50,
-                        P4 = 50, P5 = 50, P6 = 50,
-                        P7 = 50, P8 = 50, P9 = 0, 
-                        P9mix = NULL,
-                        BFGSburnin = 0,
-                        BFGSfn = NULL,
-                        BFGShelp = NULL, 
-                        control = list(),
-                        optim.method = ifelse(boundary.enforcement < 2,
-                                              "BFGS", "L-BFGS-B"),
-                        transform = FALSE,
-                        debug = FALSE, 
-                        cluster = FALSE,
-                        balance = FALSE,
-                        ...) {
+genoud_cache <- function(fn, nvars, max = FALSE, pop.size = 1000,
+                         max.generations = 100, 
+                         wait.generations = 10,
+                         hard.generation.limit = TRUE,
+                         starting.values = NULL, 
+                         MemoryMatrix = TRUE,
+                         Domains = NULL,
+                         default.domains = 10, 
+                         solution.tolerance = 0.001,
+                         gr = NULL,
+                         boundary.enforcement = 0, 
+                         lexical = FALSE,
+                         gradient.check = TRUE,
+                         BFGS = TRUE,
+                         data.type.int = FALSE, 
+                         hessian = FALSE,
+                         unif.seed = round(runif(1, 1, 2147483647L)), 
+                         int.seed = round(runif(1, 1, 2147483647L)),
+                         print.level = 2, 
+                         share.type = 0,
+                         instance.number = 0,
+                         output.path = "stdout", 
+                         output.append = FALSE,
+                         project.path = NULL,
+                         P1 = 50, P2 = 50, P3 = 50,
+                         P4 = 50, P5 = 50, P6 = 50,
+                         P7 = 50, P8 = 50, P9 = 0, 
+                         P9mix = NULL,
+                         BFGSburnin = 0,
+                         BFGSfn = NULL,
+                         BFGShelp = NULL, 
+                         control = list(),
+                         optim.method = ifelse(boundary.enforcement < 2,
+                                               "BFGS", "L-BFGS-B"),
+                         transform = FALSE,
+                         debug = FALSE, 
+                         cluster = FALSE,
+                         balance = FALSE,
+                         ...) {
     
     if (!requireNamespace("rgenoud", quietly = TRUE)) {
         stop("This function requires the '' package")
     }
 
-    mc <- as.list(match.call())
-    Ldots <- list(...)
+    if (!is.null(gr)) {
+        stop("'gr' must not be given in this function!")
+    }
+    
+    if (FALSE) {
+        Ldots <- list(...)
+        cat("XXX\n")
+        print(Ldots)
+        if (!is.na(match("gr", names(Ldots)))) {
+            stop("'gr' is not a formal argument of the 'genoud_cache' function ",
+                 "and it can not either be passed in dots '...'")
+        }
+    }
 
-    if (!is.na(match("gr", names(Ldots)))) {
-        stop("'gr' is not a formal argument of the 'genoudCache' function ",
-             "and it can not either be passed in dots '...'")
+    mc <- as.list(match.call())
+
+    cat("XXX\n")
+    ## Caution the first name is ""
+    nmArgs <- setdiff(names(mc), names(formals(genoud_cache)))
+    nmF <- names(formals(fn))
+    nmArgs[1] <- nmF[1]
+    if (!all(nmArgs %in% nmF)) {
+        Pb <- setdiff(nmArgs, nmF)
+        stop("Arguments ", Pb, " can not be passed to 'fn'") 
+    }
+    L <- list(x = NA)
+    names(L) <- nmF[1]
+    if (length(nmArgs) > 1) {
+        for (i in 2:length(nmArgs)) {
+            nm <- nmArgs[i]
+            L[[nm]] <- mc[[nm]]
+        }
     }
 
     envir <- new.env()
     
-    fnCache <- function(x, ...) {
-        res <- fn(x, ...)
+    fnCache <- function(x) {
+        L[[1]] <- x
+        res <- do.call(fn, L)
         assign("gradient", value = res$gradient, envir = envir)
         res$objective
     }
     
-    grCache <- function(x, ...) {
+    grCache <- function(x) {
         get("gradient", envir = envir)
     }
 
     ## is this really useful?
     environment(fnCache) <- environment(grCache) <- envir
 
+    ## pE <- parent.env(environment())
+    ## cat("XXX\n")
+    ## print(ls(envir = pE))
+    
     args <- list()
     ## copy/replace the default values
-    if (length(mc) > 1) {
-        nms <- names(mc)
-        for (i in 2:length(mc)) {
-            nm <- nms[i]
-            args[[nm]] <- mc[[nm]]
+    nms2 <- setdiff(intersect(names(mc), names(formals(genoud))),
+                   c("fn", "gr"))
+    if (length(nms2) > 0) {
+        for (i in 1:length(nms2)) {
+            nm <- nms2[i]
+            args[[nm]] <- mc[[nm]] 
         }
     }
     args[["fn"]] <- fnCache
     args[["gr"]] <- grCache
+    
+    ## 'dots' arguments.
+    ## if (length(Ldots) > 0) args <- c(args, Ldots)
     
     res <- do.call(genoud, args = args)
 
     res
     
 }
+

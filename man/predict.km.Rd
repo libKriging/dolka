@@ -2,7 +2,7 @@
 % Please edit documentation in R/kmStuff.R
 \name{predict.km}
 \alias{predict.km}
-\title{Predicted values, confidence intervals}
+\title{PredictedValues and Confidence Intervals}
 \usage{
 \method{predict}{km}(
   object,
