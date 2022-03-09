@@ -9,12 +9,12 @@ problems for math.
 -   The one-point optimization criteria such as and their derivatives
     could optionnaly be computed by the method or by a new method say .
 
-2 Exixting functions
+2 Existing functions
 ====================
 
 -   `contours` Allow to pass further arguments to `predict` or to the
     functions `other` and `otherGrad`. For instance we may want to
     change `type` in `predict` or `proxy` in `EI` used as `other`.
 
--   `genoudCache` Check that all arguments of `fn` are well used. Of
-    course optimization criteria such as `EI` will need `model`.
+-   **\[x\]** `genoud_cache` Check that all arguments of `fn` are well
+    used. Of course, optimization criteria such as `EI` needs `model`.
