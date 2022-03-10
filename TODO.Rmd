@@ -28,3 +28,8 @@ functions `other` and `otherGrad`. For instance we may want to change
 
 - **[x]** `genoud_cache` Check that all arguments of `fn` are well
   used. Of course, optimization criteria such as `EI` needs `model`.
+
+# New functions
+
+- Add a `optim_cache` function to use `optim` without having to
+manually cache the gradient in an environment.

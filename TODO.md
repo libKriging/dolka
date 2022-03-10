@@ -18,3 +18,9 @@ problems for math.
 
 -   **\[x\]** `genoud_cache` Check that all arguments of `fn` are well
     used. Of course, optimization criteria such as `EI` needs `model`.
+
+3 New functions
+===============
+
+-   Add a `optim_cache` function to use `optim` without having to
+    manually cache the gradient in an environment.
