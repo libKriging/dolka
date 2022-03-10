@@ -338,8 +338,8 @@ qEI.grad <- function(x, model,
 
     ## XXXY Notes YD:
     ## 
-    ## o 'bk' seems to be never changed below o Since 'bk' and 'mk'
-    ## are used through indexed forms, they both could be vecors.
+    ## o Since 'bk' and 'mk' are used through indexed forms, they both
+    ## could be vectors.
     ## 
     ## o Why not use bk - mk?
     

@@ -178,7 +178,7 @@ genoud_cache <- function(fn, nvars, max = FALSE, pop.size = 1000,
 
     mc <- as.list(match.call())
 
-    cat("XXX\n")
+    ## cat("XXX\n")
     ## Caution the first name is ""
     nmArgs <- setdiff(names(mc), names(formals(genoud_cache)))
     nmF <- names(formals(fn))

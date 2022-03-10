@@ -4,7 +4,7 @@
 ## Check the derivatives (Jacobian arrays) returned by the 'predict' method
 ## for the class "km" as refactored in dolka.
 ##
-## CAUTION. The 'predict.km' function of dollka may be no longer exported in
+## CAUTION. The 'predict.km' function of dolka may be no longer exported in
 ## the future. Switch then to a simple 'predict'.
 ##
 ## The check is for the following stats trend, mean, variance, and covariance.
