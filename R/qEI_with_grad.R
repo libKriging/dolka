@@ -35,13 +35,15 @@
 ##'     arrays) are computed and stored in the environment given in
 ##'     \code{envir}.
 ##' 
-##' @param outList Logical. Logical When \code{out_list} is
+##' @param out_list Logical. Logical When \code{out_list} is
 ##'     \code{TRUE} the result is a \emph{list} with one element
 ##'     \code{objective}. If \code{deriv} is \code{TRUE} the list has
 ##'     a second element \code{gradient}. When \code{out_list} is
 ##'     \code{FALSE} the result is the numerical value of the
 ##'     objective, possibly having an attribute named
 ##'     \code{"gradient"}.
+##'
+##' @param trace Integer level of verbosity.
 ##'
 ##' @return The multipoint Expected Improvement, defined as
 ##'     \deqn{qEI(X_{new}) := E\left[\{ \min Y(X)  - \min Y(X_{new}) \}_{+}
@@ -163,12 +165,16 @@ qEI_with_grad <- function(x, model, plugin = NULL,
                           fastCompute = TRUE,
                           eps = 1e-5,
                           deriv = TRUE,
-                          outList = TRUE) {
+                          out_list = TRUE,
+                          trace = 1) {
 
     type <- match.arg(type)
     d <- model@d
 
     if (!is.matrix(x)) x <- matrix(x, ncol = d)
+    nx <- length(x)
+
+    if (trace) cat("length(x) = ", nx, "\n")
     
     xb <- rbind(model@X, x)
 
@@ -176,7 +182,7 @@ qEI_with_grad <- function(x, model, plugin = NULL,
     ## XXXY Remove the rows of 'x' that are already present in
     ## 'model@X'. If no row remains, return 0 with derivative 0.
     ##
-    ## Note that 'model@X' can have dupplicated rows (possible with
+    ## Note that 'model@X' can have duplicated rows (possible with
     ## DiceKriging::km).
     ##
     ## CAUTION This check is not the same as the one done in
@@ -188,7 +194,15 @@ qEI_with_grad <- function(x, model, plugin = NULL,
     x <- unique(round(xb, digits = 8))
     
     if ((nExp + 1) > length(x[ , 1])) {
-        return (0)
+        cat("AAAAAAAA\n")
+        this.qEI <- 0
+        if (deriv) {
+            if (out_list) {
+                this.qEI <- list("objective" = this.qEI,
+                                 "gradient" = rep(0, nx))
+            } else attr(this.qEI, "gradient") <- rep(0, nx)
+        }
+        return(this.qEI)
     }
     
     x <- matrix(x[(nExp + 1):length(x[ , 1]), ], ncol = d)
@@ -201,13 +215,17 @@ qEI_with_grad <- function(x, model, plugin = NULL,
     if (nrow(x) == 1) {
         ## XXXY in the original code 'minimization' is not
         ## passed to 'EI'. BUG?
+        if (trace) {
+            cat("'x' has one row. Using 'EI_with_grad'\n")
+            print(x)
+        }
         return(EI_with_grad(x = x,
                             model = model,
                             plugin = plugin,
                             type = type,
                             minimization = minimization,
                             deriv = deriv,
-                            outList = outList))
+                            out_list = out_list))
     }
     
     ## Compute the kriging prediction with derivatives
@@ -277,7 +295,7 @@ qEI_with_grad <- function(x, model, plugin = NULL,
     thisqEI <- sum(first_term, second_term)
 
     if (!deriv) {
-        if (outList) return(list("objective" = thisqEI))
+        if (out_list) return(list("objective" = thisqEI))
         else return(thisqEI)
     }
 
@@ -486,11 +504,13 @@ qEI_with_grad <- function(x, model, plugin = NULL,
 
     if (is.nan(sum(EI.grad))) EI.grad <- matrix(0, q, d)
 
-    if (outList){ 
+    EI.grad <- as.vector(EI.grad)
+    
+    if (out_list){ 
         res <- list("objective" = thisqEI, "gradient" = EI.grad)
     } else {
         res <- thisqEI
-        att(res, "gradient") <- EI.grad
+        attr(res, "gradient") <- EI.grad
     }
     
     res 

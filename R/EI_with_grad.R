@@ -59,7 +59,7 @@
 ##' @author David Ginsbourger, Olivier Roustant and Victor Picheny.
 ##'
 ##' @seealso \code{\link{max_EI}}, \code{\link{EGO.nsteps}},
-##'     \code{\link{qEI}}
+##'     \code{\link{qEI}}, \code{\link{EI}} and \code{\link{EI.grad}}.
 ##'
 ##' @references
 ##' D. Ginsbourger (2009), \emph{Multiples métamodèles pour
@@ -81,8 +81,6 @@
 ##' optimization}, Ph.D. thesis, University of Waterloo.
 ##' 
 ##' @keywords models
-##' 
-##' @examples
 ##' 
 EI_with_grad <- function (x, model, plugin = NULL, type = c("UK", "SK"),
                           minimization = TRUE, proxy = FALSE, deriv = TRUE,

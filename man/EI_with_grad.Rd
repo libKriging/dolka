@@ -73,9 +73,6 @@ The Expected Improvement (EI) is defined as \deqn{EI(x)
     inputs used in \code{model}. The EI and its gradient are
     computed using their closed forms.
 }
-\examples{
-
-}
 \references{
 D. Ginsbourger (2009), \emph{Multiples métamodèles pour
 l'approximation et l'optimisation de fonctions numériques
@@ -97,7 +94,7 @@ optimization}, Ph.D. thesis, University of Waterloo.
 }
 \seealso{
 \code{\link{max_EI}}, \code{\link{EGO.nsteps}},
-    \code{\link{qEI}}
+    \code{\link{qEI}}, \code{\link{EI}} and \code{\link{EI.grad}}.
 }
 \author{
 David Ginsbourger, Olivier Roustant and Victor Picheny.

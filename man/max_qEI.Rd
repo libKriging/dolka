@@ -11,7 +11,8 @@ max_qEI(
   upper,
   crit = c("exact", "CL"),
   minimization = TRUE,
-  optimcontrol = NULL
+  optimcontrol = NULL,
+  trace = 1
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ is used in minimization or in maximization.}
 
 \item{optimcontrol}{an optional list of control parameters for
 optimization. See details.}
+
+\item{trace}{Integer. Level of verbosity.}
 }
 \value{
 A list with components:
@@ -50,7 +53,8 @@ Maximization of the \code{\link{qEI}} criterion. This
     for now. calls the function \code{\link{genoud}} using
     analytical formulae of \code{\link{qEI}} and its gradient
     \code{\link{qEI.grad}}.
-
+}
+\details{
 The parameters of list \code{optimcontrol} include
 \code{optimcontrol$method}, with character value \code{"BFGS"}
 (default) or \code{"genoud"}, specifying the method used to
@@ -155,10 +159,10 @@ design.fact <- expand.grid(x1 = seq(0, 1, length = 3),
 response.branin <- apply(design.fact, 1, branin)
 lower <- c(0, 0); upper <- c(1, 1)
 
-# number of point in the batch
+## number of point in the batch
 batchSize <- 3
 
-# model fit
+## model fit
 fitted.model <- km(~1, design = design.fact, response = response.branin, 
                    covtype = "gauss",
                    control = list(pop.size = 50, trace = FALSE),
@@ -169,33 +173,30 @@ fitted.model <- km(~1, design = design.fact, response = response.branin,
 ## With a multistarted BFGS algorithm
 ## ==================================
 \dontrun{
-   ## XXXY does not work for now, need 'optim_cache'
     maxBFGS <- max_qEI(model = fitted.model, npoints = batchSize,
                        lower = lower, upper = upper, 
                        crit = "exact",
                        optimcontrol = list(nStarts = 3, method = "BFGS"))
 
-## comparison
-## ==========
-print(maxBFGS$value)
-
+    print(maxBFGS$value)
 }
 
 ## With a genetic algorithm using derivatives
+## ==========================================
 maxGen  <- max_qEI(model = fitted.model, npoints = batchSize,
                    lower = lower, upper = upper, 
                    crit = "exact",
                    optimcontrol = list(nStarts = 3, method = "genoud",
                                        pop.size = 100, max.generations = 15))
+print(maxGen$value)
 
+## With the constant liar heuristic
+## ================================
 \dontrun{
-
-    ## With the constant liar heuristic
     maxCL   <- max_qEI(model = fitted.model, npoints = batchSize,
                        lower = lower, upper = upper,
                        crit = "CL",
                        optimcontrol = list(pop.size = 20))
-    print(maxGen$value)
     print(maxCL$value)
 }
 }

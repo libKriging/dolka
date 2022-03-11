@@ -66,7 +66,8 @@
 ##'     the "cache" mechanism.
 ##'
 ##' @section Caution: This function is hightly experimental and has
-##'     not been tested enough yet.
+##'     not been tested enough yet. It should be refactored on the
+##'     basis of \code{\link{optim_cache}} which is more achieved.
 ##' 
 ##' @importFrom stats runif
 ##' @importFrom rgenoud genoud
@@ -159,7 +160,7 @@ genoud_cache <- function(fn, nvars, max = FALSE, pop.size = 1000,
                          ...) {
     
     if (!requireNamespace("rgenoud", quietly = TRUE)) {
-        stop("This function requires the '' package")
+        stop("This function requires the 'rgenoud' package")
     }
 
     if (!is.null(gr)) {

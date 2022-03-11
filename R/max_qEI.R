@@ -9,7 +9,8 @@
 ##'     for now. calls the function \code{\link{genoud}} using
 ##'     analytical formulae of \code{\link{qEI}} and its gradient
 ##'     \code{\link{qEI.grad}}.
-##' 
+##'
+##' @details
 ##' The parameters of list \code{optimcontrol} include
 ##' \code{optimcontrol$method}, with character value \code{"BFGS"}
 ##' (default) or \code{"genoud"}, specifying the method used to
@@ -110,7 +111,7 @@
 ##'
 ##' @param npoints Integer representing the desired number of
 ##'     iterations.
-##'
+##' 
 ##' @param lower,upper Numeric vectors of lower and upper bounds.
 ##'
 ##' @param crit Character \code{"exact"} or \code{"CL"} specifying the
@@ -125,6 +126,9 @@
 ##' @param optimcontrol an optional list of control parameters for
 ##'     optimization. See details.
 ##' 
+##' @param trace Integer. Level of verbosity.
+##' 
+##'
 ##' @return A list with components:
 ##' \itemize{
 ##' \item{par}{ A matrix with its rows containing the \code{npoints}
@@ -161,6 +165,9 @@
 ##' 
 ##' @keywords optimize
 ##'
+##' @importFrom stats optim
+##' @importFrom DiceOptim sampleFromEI
+##' 
 ##' @export max_qEI
 ##' 
 ##' @examples
@@ -173,10 +180,10 @@
 ##' response.branin <- apply(design.fact, 1, branin)
 ##' lower <- c(0, 0); upper <- c(1, 1)
 ##' 
-##' # number of point in the batch
+##' ## number of point in the batch
 ##' batchSize <- 3
 ##' 
-##' # model fit
+##' ## model fit
 ##' fitted.model <- km(~1, design = design.fact, response = response.branin, 
 ##'                    covtype = "gauss",
 ##'                    control = list(pop.size = 50, trace = FALSE),
@@ -187,33 +194,30 @@
 ##' ## With a multistarted BFGS algorithm
 ##' ## ==================================
 ##' \dontrun{
-##'    ## XXXY does not work for now, need 'optim_cache'
 ##'     maxBFGS <- max_qEI(model = fitted.model, npoints = batchSize,
 ##'                        lower = lower, upper = upper, 
 ##'                        crit = "exact",
 ##'                        optimcontrol = list(nStarts = 3, method = "BFGS"))
 ##' 
-##' ## comparison
-##' ## ==========
-##' print(maxBFGS$value)
-##'
+##'     print(maxBFGS$value)
 ##' }
 ##' 
 ##' ## With a genetic algorithm using derivatives
+##' ## ==========================================
 ##' maxGen  <- max_qEI(model = fitted.model, npoints = batchSize,
 ##'                    lower = lower, upper = upper, 
 ##'                    crit = "exact",
 ##'                    optimcontrol = list(nStarts = 3, method = "genoud",
 ##'                                        pop.size = 100, max.generations = 15))
-##'
-##' \dontrun{
+##' print(maxGen$value)
 ##' 
-##'     ## With the constant liar heuristic
+##' ## With the constant liar heuristic
+##' ## ================================
+##' \dontrun{
 ##'     maxCL   <- max_qEI(model = fitted.model, npoints = batchSize,
 ##'                        lower = lower, upper = upper,
 ##'                        crit = "CL",
 ##'                        optimcontrol = list(pop.size = 20))
-##'     print(maxGen$value)
 ##'     print(maxCL$value)
 ##' }
 max_qEI <- function(model,
@@ -222,13 +226,13 @@ max_qEI <- function(model,
                     upper,
                     crit = c("exact", "CL"),
                     minimization = TRUE,
-                    optimcontrol = NULL) {
-
+                    optimcontrol = NULL,
+                    trace = 1) {
+    
     crit <- match.arg(crit)
-
-    if (crit != "exact" || optimcontrol$method != "genoud") {
-        stop("for now, one can only use 'crit = \"exact\"' and ",
-             "'optimcontrol$method = \"genoud\"'")
+    
+    if (crit != "exact") {
+        stop("for now, one can only use 'crit = \"exact\"'")
     }
     
     if (is.null(optimcontrol$method)) optimcontrol$method <- "BFGS"
@@ -237,19 +241,25 @@ max_qEI <- function(model,
     parinit <- optimcontrol$parinit
     
     if (crit == "CL") {
+        if (trace) {
+            cat("o Using the 'max_qEI.CL' function\n")
+            cat("=================================\n")
+        }
 
-        res <- max_qEI.CL(model, npoints, optimcontrol$L,
-                          lower, upper,
-                          parinit = parinit,
-                          minimization = minimization,
-                          control = optimcontrol)
-        res <- list(par = res$par,
-                    value = matrix(qEI(x = res$par, model = model)))
+        ## XXXY Not available for now (requires several imports from
+        ## DiceOptim)
+        ## res <- max_qEI.CL(model, npoints, optimcontrol$L,
+        ##                   lower, upper,
+        ##                   parinit = parinit,
+        ##                   minimization = minimization,
+        ##                   control = optimcontrol)
+        ## res <- list(par = res$par,
+        ##             value = matrix(qEI(x = res$par, model = model)))
         
     } else if (crit == "exact") {
         
-        EI.envir <- new.env()
-        environment(qEI) <- environment(qEI.grad) <- EI.envir
+        ## EI.envir <- new.env()
+        ## environment(qEI) <- environment(qEI.grad) <- EI.envir
         
         LOWER <- c(apply(matrix(lower, d, 1), 1, rep, npoints))
         UPPER <- c(apply(matrix(upper, d, 1), 1, rep, npoints))
@@ -280,19 +290,25 @@ max_qEI <- function(model,
                     x <- parinit[ , , i]
                 }
                 if (!(optimcontrol$gradNum)) {
-                    o <- optim(c(x), qEI, qEI.grad,
-                               control = list(trace = 0,
-                                              REPORT = 1,
-                                              fnscale = -1,
-                                              maxit = optimcontrol$maxit),
-                               method = "L-BFGS-B",
-                               lower = LOWER, upper = UPPER,
-                               model = model,
-                               envir = EI.envir,
-                               fastCompute = optimcontrol$fastCompute,
-                               minimization = minimization)
+                    if (trace) {
+                        cat("Optimizing 'qEI_with_grad' using 'optim_cache'\n")
+                        cat("==============================================\n")
+                    }
+                    o <- optim_cache(par = c(x), fn = qEI_with_grad,
+                                     control = list(trace = 0,
+                                                    REPORT = 1,
+                                                    fnscale = -1,
+                                                    maxit = optimcontrol$maxit),
+                                     method = "L-BFGS-B",
+                                     lower = LOWER, upper = UPPER,
+                                     model = model,
+                                     ## envir = EI.envir,
+                                     fastCompute = optimcontrol$fastCompute,
+                                     minimization = minimization)
                 } else {
-                    o <- optim(par = c(x), fn = qEI, gr=NULL,
+                    cat("Optimizing 'qEI' using 'optim'\n")
+                    cat("==============================\n")
+                    o <- optim(par = c(x), fn = qEI, gr = NULL,
                                control = list(trace = 0,
                                               REPORT = 1,
                                               fnscale = -1,
@@ -300,7 +316,7 @@ max_qEI <- function(model,
                                method = "L-BFGS-B",
                                lower = LOWER, upper = UPPER,
                                model = model,
-                               envir = EI.envir,
+                               ## envir = EI.envir,
                                fastCompute = optimcontrol$fastCompute,
                                minimization = minimization)
                 }
@@ -318,7 +334,7 @@ max_qEI <- function(model,
             ## parinit = NULL,minimization = minimization, control = control)
             
         } else if (optim.method == "genoud") {
-
+            
             args <- formals(genoud)
             
             args$fn <- qEI_with_grad
@@ -359,13 +375,15 @@ max_qEI <- function(model,
                 }
             }   
 
-            
             args <- c(args,                ## formals of 'genoud'
                       model = model,       ## further arguments for 'EI', passed by dots
                       fastCompute = fastCompute,
                       minimization = minimization)
 
             args[["..."]] <- NULL            
+            
+            cat("Optimizing 'qEI_with_max' using 'genoud'\n")
+            cat("========================================\n")
             
             o <- do.call(genoud_cache, args)
             
@@ -428,56 +446,59 @@ max_qEI <- function(model,
 }
 
 
-max_qEI.CL <- function(model, npoints, L,
-                       lower, upper,
-                       parinit = NULL,
-                       minimization = TRUE,
-                       control = NULL) {
-    KB <- FALSE
-    n1 <- nrow(model@X)
-    lengthParinit <- length(parinit[1,])
-    if (is.null(L)) {
-        liar <- minimization * min(model@y) + (!minimization) * max(model@y)
-    } else if (L == "max") {
-        liar <- max(model@y)
-    } else if (L == "min") {
-        liar <- min(model@y)
-    } else if (L == "mean") {
-        KB <- TRUE
-    } else {
-        if ((!is.numeric(L)) || (length(L) != 1))
-            stop("control$L must be NULL, \"max\", \"min\", \"mean\" or ",
-                 "a scalar specifying the plugin.")
-        liar <- L
-    }
-    for (s in 1:npoints) {
-        if (s > lengthParinit){
-            startPoint <- NULL
-        } else {
-            startPoint <- parinit[,s]
-        }
+## max_qEI.CL <- function(model, npoints, L,
+##                        lower, upper,
+##                        parinit = NULL,
+##                        minimization = TRUE,
+##                        control = NULL) {
+##     KB <- FALSE
+##     n1 <- nrow(model@X)
+##     lengthParinit <- length(parinit[1,])
+##     if (is.null(L)) {
+##         liar <- minimization * min(model@y) + (!minimization) * max(model@y)
+##     } else if (L == "max") {
+##         liar <- max(model@y)
+##     } else if (L == "min") {
+##         liar <- min(model@y)
+##     } else if (L == "mean") {
+##         KB <- TRUE
+##     } else {
+##         if ((!is.numeric(L)) || (length(L) != 1) || is.na(as.numeric(L)))
+##             stop("control$L must be NULL, \"max\", \"min\", \"mean\" or ",
+##                  "a scalar specifying the plugin.")
+##         liar <- L
+##     }
+##     for (s in 1:npoints) {
+##         if (s > lengthParinit){
+##             startPoint <- NULL
+##         } else {
+##             startPoint <- parinit[ , s]
+##         }
 
-        oEGO <- max_EI(model = model,
-                       lower = lower, upper = upper,
-                       parinit = startPoint,
-                       minimization = minimization,
-                       control = c(control, list(print.level = 0)))
+##         oEGO <- max_EI(model = model,
+##                        lower = lower, upper = upper,
+##                        parinit = startPoint,
+##                        minimization = minimization,
+##                        control = c(control, list(print.level = 0)))
 
-        model@X <- rbind(model@X, oEGO$par)
+
+##         ## XXXY Is'nt this something like 'update.km'? This could be a
+##         ## cheap version with no re-estimation.
+##         model@X <- rbind(model@X, oEGO$par)
         
-        if (KB) liar <- predict(object = model,newdata = oEGO$par,
-                                se.compute = FALSE, cov.compute = FALSE,
-                                light.return = TRUE, checkNames = FALSE)$mean
+##         if (KB) liar <- predict(object = model,newdata = oEGO$par,
+##                                 se.compute = FALSE, cov.compute = FALSE,
+##                                 light.return = TRUE, checkNames = FALSE)$mean
 
-        model@y <- rbind(model@y, liar, deparse.level = 0)   		
-        model@F <- trendMatrix.update(model, Xnew = data.frame(oEGO$par))	
+##         model@y <- rbind(model@y, liar, deparse.level = 0)   		
+##         model@F <- trendMatrix.update(model, Xnew = data.frame(oEGO$par))	
         
-        if (model@noise.flag) {
-            ## heterogenous case : use 0 nugget for new points
-            model@noise.var = c(model@covariance@nugget, 0)
-        }	
-        model <- computeAuxVariables(model)
-    }
-    return(list(par = model@X[(n1 + 1):(n1 + npoints), , drop = FALSE],
-                value = model@y[(n1 + 1):(n1 + npoints), , drop = FALSE]))
-}
+##         if (model@noise.flag) {
+##             ## heterogenous case : use 0 nugget for new points
+##             model@noise.var = c(model@covariance@nugget, 0)
+##         }	
+##         model <- computeAuxVariables(model)
+##     }
+##     return(list(par = model@X[(n1 + 1):(n1 + npoints), , drop = FALSE],
+##                 value = model@y[(n1 + 1):(n1 + npoints), , drop = FALSE]))
+## }

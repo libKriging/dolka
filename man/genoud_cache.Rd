@@ -156,7 +156,8 @@ The optimization is expected to be faster than
 }
 \section{Caution}{
  This function is hightly experimental and has
-    not been tested enough yet.
+    not been tested enough yet. It should be refactored on the
+    basis of \code{\link{optim_cache}} which is more achieved.
 }
 
 \examples{

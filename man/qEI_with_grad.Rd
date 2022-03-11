@@ -13,7 +13,8 @@ qEI_with_grad(
   fastCompute = TRUE,
   eps = 1e-05,
   deriv = TRUE,
-  outList = TRUE
+  out_list = TRUE,
+  trace = 1
 )
 }
 \arguments{
@@ -46,13 +47,15 @@ kriging mean vector and of the kriging covariance (Jacobian
 arrays) are computed and stored in the environment given in
 \code{envir}.}
 
-\item{outList}{Logical. Logical When \code{out_list} is
+\item{out_list}{Logical. Logical When \code{out_list} is
 \code{TRUE} the result is a \emph{list} with one element
 \code{objective}. If \code{deriv} is \code{TRUE} the list has
 a second element \code{gradient}. When \code{out_list} is
 \code{FALSE} the result is the numerical value of the
 objective, possibly having an attribute named
 \code{"gradient"}.}
+
+\item{trace}{Integer level of verbosity.}
 }
 \value{
 The multipoint Expected Improvement, defined as

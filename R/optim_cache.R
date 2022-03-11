@@ -1,0 +1,169 @@
+##'
+##' @description  Run the \code{\link[stats]{optim}} function from
+##'     the \pkg{stats} package with the objective and the gradient
+##'     defined in \emph{one} function. The result is global
+##'     minimization of a real-valued function of a numeric vector
+##'     with length \eqn{d} to be provided by \code{fn}. The R
+##'     function \code{fn} must provide the values of the objective
+##'     and its gradient.
+##'
+##'     The formal arguments of this function and their default values
+##'     are those of the \code{\link[stats]{optim}} function at the
+##'     time when this function is written, based on version
+##'     \code{4.1.2} of \pkg{R}. The \code{optim} function is unlikely
+##'     to be changed in the future.
+##' 
+##' @title Run the \code{optim} Optimization Function with a Cached
+##'     Gradient
+##' 
+##' @param par The initial values for the parameters to be optimized
+##'     over as in \code{\link[stats]{optim}}.
+##'
+##' @param fn The function to be minimized. As a major difference with
+##'     \code{optim}, this function must return a list with \emph{two
+##'     elements} \code{objective} and \code{gradient} (vector).
+##' 
+##' @param gr Can not be used. This argument is for compatibility with
+##'     \code{\link[stats]{optim}}. It can be removed in future
+##'     versions.
+##'
+##' @param ... Further arguments to be passed to
+##'     \code{\link[stats]{optim}}.
+##' 
+##' @param method As in \code{\link[stats]{optim}}. Since we are
+##'     always using the gradient in this function, only the methods
+##'     \code{"BFGS"}, \code{"CG"} \code{"L-BFGS-B"} can be used here.
+##'
+##' @param lower,upper,hessian,control See \code{\link[stats]{optim}}.
+##' 
+##' @return A list with the same structure as that returned by
+##'     \code{\link[stats]{optim}}. It contains \code{par} and
+##'     \code{value} giving the best set of parameters found and to
+##'     the value of \code{fn} corresponding to \code{par}.
+##'
+##' @export
+##' 
+##' @examples
+##' ## Note that in this example, gradient caching would not be worth it.
+##' 
+##' ## emulate a costly-to-evaluate-alone gradient
+##' ## ===========================================
+##' braninDer <- function(x) {
+##'    Sys.sleep(0.01)
+##'    braninGrad(x)$gradient
+##' }
+##' 
+##' ## separate objective and gradient functions
+##' ## =========================================
+##' te <-
+##'     system.time(res <- optim(par = c(0.5, 0.5), fn = branin, gr = braninDer))
+##'
+##' ## gradient "cached"
+##' ## ================
+##' teCache <-
+##'     system.time(resCache <- optim_cache(par = c(0.5, 0.5), fn = braninGrad))
+##' rbind("optim" = te, "optim_cache" = teCache)
+##' c("optim" = res$value, "optim_cache" = resCache$value)
+##'
+##' ## Check the use of ...
+##' ## ====================
+##' braninShift <- function(x, shift = 0) {
+##'     res <- braninGrad(x)
+##'     res$objective <- res$objective + shift
+##'     res
+##' }
+##' resShifted <- optim_cache(par = c(0.5, 0.5), fn = braninShift, shift = 100)
+##' c("optim_cache" = resCache$value, "optimShifted" = resShifted$value - 100)
+##' 
+optim_cache <- function(par,
+                        fn,
+                        gr = NULL, ...,
+                        method = c("BFGS", "CG", "L-BFGS-B"),
+                        lower = -Inf, upper = Inf,
+                        control = list(), hessian = FALSE) {
+
+    
+    method <- match.arg(method)
+    
+    if (!is.null(gr)) {
+        stop("'gr' must not be given in this function!")
+    }
+    
+    if (FALSE) {
+        Ldots <- list(...)
+        cat("XXX\n")
+        print(Ldots)
+    }
+    
+    mc <- as.list(match.call())
+
+    ## =========================================================================
+    ## 'nmArgs' contains the names of the formals in the call that are
+    ## not formals of `optim`. These should be passed to `fn` hence
+    ## must be formals of `fn`. 
+    ##
+    ## Caution the first name in the call is "" (to mean the present
+    ## function). Note that we do not pass all the arguments ofd 'fn'
+    ## to 'fnCache' and 'grCache', but only the first one. The other
+    ## arguments are found in 'envf'. We use names with dots, since 'res' or
+    ## 'gradient' could be formal arguments of 'fn'.
+    ## =========================================================================
+    
+    nmArgs <- setdiff(names(mc), names(formals(optim_cache)))
+    nmF <- names(formals(fn))
+    nmArgs[1] <- nmF[1]
+    if (!all(nmArgs %in% nmF)) {
+        Pb <- setdiff(nmArgs, nmF)
+        stop("Arguments ", Pb, " can not be passed to 'fn'") 
+    }
+
+    L <- list(NA)
+    names(L) <- nmF[1]
+    
+    if (length(nmArgs) > 1) {
+        for (i in 2:length(nmArgs)) {
+            nm <- nmArgs[i]
+            L[[nm]] <- eval(mc[[nm]], envir = parent.frame())
+        }
+    }
+
+    envf <- new.env()
+    
+    fnCache <- function(x, envir) {
+        L[[1]] <- x
+        .res <- do.call(fn, L)
+        assign(".gradient", value = .res$gradient, envir = envir)
+        .res$objective
+    }
+    
+    environment(fnCache) <- envf
+
+    grCache <- function(x, envir) {
+        get(".gradient", envir = envir)
+    }
+    
+    environment(grCache) <- envf
+
+    ## =========================================================================
+    ## The arguments of the call to 'optim' include the arguments
+    ## given in the call which are not arguments of 'fn', plus 'fn' and 'gr'.
+    ## =========================================================================
+
+    args <- list()
+    nms2 <- setdiff(intersect(names(mc), names(formals(optim))), c("fn", "gr"))
+    if (length(nms2) > 0) {
+        for (i in 1:length(nms2)) {
+            nm <- nms2[i]
+            args[[nm]] <- eval(mc[[nm]], envir = parent.frame())
+        }
+    }
+    args[["fn"]] <- fnCache
+    args[["gr"]] <- grCache
+    args[["envir"]] <- envf
+    
+    res <- do.call(optim, args = args)
+
+    res
+    
+}
+

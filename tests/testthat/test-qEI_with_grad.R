@@ -42,7 +42,7 @@ for (i in seq_along(Funs)) {
         qEI_with_grad(xNew, model = fit,
                       deriv = FALSE,
                       type = type,
-                      outList = FALSE)
+                      out_list = FALSE)
     }
     for (type in Types) {
 
@@ -51,7 +51,7 @@ for (i in seq_along(Funs)) {
 
         res <- qEI_with_grad(XNew, model = fit, deriv = TRUE,
                              type = type,
-                             outList = TRUE)
+                             out_list = TRUE)
         
         ## res <- DiceOptim::qEI.grad(XNew, model = fit, type = type)
         
