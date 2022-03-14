@@ -11,6 +11,15 @@ vignette: >
     %\VignetteEncoding{UTF-8}
 linkcolor: blue
 ---
+<style type="text/css">
+h1{
+  font-size: 14pt;
+}
+h2{
+  font-size: 12pt;
+}
+</style>
+
 
 ```{r global_options, include=FALSE}
 library(knitr)
@@ -20,10 +29,11 @@ library(knitr)
 
 This is a draft of specifications for further development.
 
-Although **DiceKriging** and **rlibkriging**, several packages could
-be used to provide what we may call "Kriging Model Objects"
-(KMOs). The models considered are stochastic processes $Y(\mathbf{x})$
-indexed by a vector $\mathbf{x}$ called "design point", "input".
+Although **dolka** is devoted to the use of **DiceKriging** and
+**rlibkriging**, several packages could be used to provide what we may
+call "Kriging Model Objects" (KMOs). The models considered are
+stochastic processes $Y(\mathbf{x})$ indexed by a vector $\mathbf{x}$
+called "design point", "input".
 
 
 # R packages devoted for kriging to be used with **dolka**
@@ -41,22 +51,24 @@ appreciated by users that default values for the formal arguments allow
 to create an object by using only a small number of arguments. For
 instance a default kernel type can be proposed.
 
-Also mind that closed sets of (character) values can be coped with by
-using the `match.arg` mechanism. This simplifies the documentation
-since the allowed values and the default value are shown in the
-**Usage** section of the help. Partial matching can reduce the effort
-of the user both for typing and for argument names reminding. For
-instance the `predict` method can be used by giving `new = ` instead
-of `newdata`.  Although partial matching should not be used within R
-packages, it helps at performing quick and dirty tests or analyses.
+Also mind that arguments with values in a closed sets of (character)
+values can be coped with by using the `match.arg` mechanism. This
+simplifies the documentation since the allowed values and the default
+value are shown in the **Usage** section of the help. Partial matching
+can reduce the effort of the user both for typing and for argument
+names reminding. For instance the `predict` method can be used by
+giving `new = ` instead of `newdata`.  Although partial matching
+should not be used within R packages, it helps at performing quick and
+dirty tests or analyses.
 
 
 ## Basic methods
 
 Inasmuch KMOs can be S3 or S4, their content should not be assessed to by 
-using a slot extraction `@`or `$`.
+using a slot extraction `@`or `$`, but by using methods instead. So 
+a class of KMOs should have the followif methods.
 
-- `input_n` Number of inputs.
+- `input_n` Number of inputs (number of rows in the design matrix).
 
 - `input_names` Character. Names of the inputs.
 
@@ -77,7 +89,7 @@ simulations.
 - `object` The KMO.
 
 - `newdata` Data frame or matrix containing the new inputs. Note that
-  `newX`.
+  `newX` is used in `update`.
 
 **Caution** In a predict method "à la `lm`" the matching of the
 columns of `newdata` with those of the inputs in the object does not

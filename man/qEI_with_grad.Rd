@@ -74,7 +74,7 @@ Analytical expression of the multipoint expected
 }
 \examples{
 \donttest{
-set.seed(007)
+set.seed(7)
 ## Monte-Carlo validation
 
 ## a 4-d, 81-points grid design, and the corresponding response
