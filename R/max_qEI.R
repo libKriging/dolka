@@ -365,6 +365,24 @@ max_qEI <- function(model,
             if (is.null(optimcontrol$print.level)) {
                 args$print.level <- 0
             }
+
+            ## Added to cope with the dependence between default
+            ## values
+            
+            if (is.null(optimcontrol$boundary.enforcement)) {
+                args$boundary.enforcement <- 0 
+            } else {
+                args$boundary.enforcement <- optimcontrol$boundary.enforcement
+            }
+            
+            if (is.null(optimcontrol$optim.method)) {
+                args$optim.method <- ifelse(args$boundary.enforcement < 2, "BFGS",  "L-BFGS-B")
+            } else {
+                args$optim.method <- optimcontrol$optim.method
+            }
+          
+
+
             
             args$Domains <- cbind(LOWER, UPPER)
             

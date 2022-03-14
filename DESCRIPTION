@@ -7,8 +7,9 @@ Maintainer: The package maintainer <deville.yves@alpestat.com>
 Description: Transitional package for Bayesian optimization using DiceOptim
     and libKriging.
 Depends: DiceKriging, DiceOptim, numDeriv, methods, ggplot2
-Suggests: testthat, tidyr, grDevices, scatterplot3d
+Suggests: testthat, tidyr, grDevices, scatterplot3d, rmarkdown, knitr
 Imports: stats, randtoolbox, pbivnorm, rgenoud, mnormt, DiceDesign, parallel
+VignetteBuilder: knitr
 License: GPL
 Encoding: UTF-8
 LazyData: true

@@ -1,0 +1,141 @@
+---
+title: "Guidelines for Contributors"
+author: "Yves Deville" 
+date: "`r Sys.Date()`"
+output: 
+    rmarkdown::html_vignette:
+        toc: true
+vignette: >
+    %\VignetteIndexEntry{Guidelines for Contributors}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+linkcolor: blue
+---
+
+```{r global_options, include=FALSE}
+library(knitr)
+```
+
+# Scope
+
+This is a draft of specifications for further development.
+
+Although **DiceKriging** and **rlibkriging**, several packages could
+be used to provide what we may call "Kriging Model Objects"
+(KMOs). The models considered are stochastic processes $Y(\mathbf{x})$
+indexed by a vector $\mathbf{x}$ called "design point", "input".
+
+
+# R packages devoted for kriging to be used with **dolka**
+
+The methods can be either S3 or S4. However it seems preferable to 
+register S3 methods using a suitable call to `setMethod`. 
+
+## Creator
+
+The specification of the creator is up to the package authors. However
+it is a sound practice in R that the creator has the same name as the
+class. For example if the class is `"niceKrige"` an object will be
+created by calling the `niceKrige` function. Also it is often
+appreciated by users that default values for the formal arguments allow
+to create an object by using only a small number of arguments. For
+instance a default kernel type can be proposed.
+
+Also mind that closed sets of (character) values can be coped with by
+using the `match.arg` mechanism. This simplifies the documentation
+since the allowed values and the default value are shown in the
+**Usage** section of the help. Partial matching can reduce the effort
+of the user both for typing and for argument names reminding. For
+instance the `predict` method can be used by giving `new = ` instead
+of `newdata`.  Although partial matching should not be used within R
+packages, it helps at performing quick and dirty tests or analyses.
+
+
+## Basic methods
+
+Inasmuch KMOs can be S3 or S4, their content should not be assessed to by 
+using a slot extraction `@`or `$`.
+
+- `input_n` Number of inputs.
+
+- `input_names` Character. Names of the inputs.
+
+- `input_class` Character. Class of the inputs. For now only
+  inputs with class `"numeric"` are accepted.
+ 
+- Although not required, it can be appreciated to have the methods that
+  are relevant for the class: `coef`, `sigma`, ...
+ 
+
+## `predict` method
+
+Note that `predict` and `simulate` methods should have similar
+arguments because they perform closely related tasks. We could obtain
+the prediction mean, variance and covariance by using conditional
+simulations.
+
+- `object` The KMO.
+
+- `newdata` Data frame or matrix containing the new inputs. Note that
+  `newX`.
+
+**Caution** In a predict method "à la `lm`" the matching of the
+columns of `newdata` with those of the inputs in the object does not
+depend on the specific order but only on the names. Also `newdata` can
+contain columns that are not inputs which can be used in the trend. A
+typical example is the output of a cheap simulator. Remind that in R
+data frames and matrices behave fairly differently. When binding rows
+with `rbind`, the names of the columns we be used with data frames
+while only the positions of the columns matter with matrices. This can
+lead unexperimented R users to errors that are very difficult to
+understand.
+
+
+An argument `deriv`. When 
+`deriv` is `TRUE` the `mean.deriv` and `sd2.deriv`.
+
+## `update` method
+
+Note that this method is used in a different meaning than originally
+intended in R, see the `update` method for the class `"lm"`.
+
+- `object` 
+
+- `newX`
+
+- `newy`
+
+
+## `simulate` method
+
+- `object`
+
+- `nsim`
+
+- `newdata`
+
+
+A list with the elements 
+
+- `X` A copy of the design given.
+
+- `sim`, a numeric matrix with `nsim`columns.
+It seems preferable not to return a matrix, because the simulation can
+return other useful results such as the trend or other unobserved
+components, ... 
+
+Also the result could have S3 class inheriting from `list`. This is
+specially useful to write methods such as `plot`, `autoplot`,
+`summary` ...
+
+
+# Packages implementing Bayesian criteria 
+
+The name of the criteria. However there are constraints on their
+arguments.
+
+- The criteria should have the arguments `x` a numeric vector input,
+`model` a "kriging model object" with the methods described above. Of
+course, `x` must be compliant with `model`. `deriv` (logical)
+`out_list` (logical) and `trace` (integer). See `EI_with_grad` for the
+meaning.

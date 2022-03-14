@@ -96,7 +96,7 @@
 ##'
 ##' @examples
 ##' \donttest{
-##' set.seed(007)
+##' set.seed(7)
 ##' ## Monte-Carlo validation
 ##' 
 ##' ## a 4-d, 81-points grid design, and the corresponding response
@@ -166,7 +166,7 @@ qEI_with_grad <- function(x, model, plugin = NULL,
                           eps = 1e-5,
                           deriv = TRUE,
                           out_list = TRUE,
-                          trace = 1) {
+                          trace = 0) {
 
     type <- match.arg(type)
     d <- model@d
@@ -174,7 +174,7 @@ qEI_with_grad <- function(x, model, plugin = NULL,
     if (!is.matrix(x)) x <- matrix(x, ncol = d)
     nx <- length(x)
 
-    if (trace) cat("length(x) = ", nx, "\n")
+    if (trace > 1) cat("length(x) = ", nx, "\n")
     
     xb <- rbind(model@X, x)
 
@@ -194,7 +194,7 @@ qEI_with_grad <- function(x, model, plugin = NULL,
     x <- unique(round(xb, digits = 8))
     
     if ((nExp + 1) > length(x[ , 1])) {
-        cat("AAAAAAAA\n")
+        ## cat("AAAAAAAA\n")
         this.qEI <- 0
         if (deriv) {
             if (out_list) {

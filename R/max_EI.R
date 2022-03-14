@@ -269,7 +269,7 @@ max_EI <-function(model, plugin = NULL, type = "UK",
     } else {
         args$BFGSburnin <- genoud_args$BFGSburnin
     }
-    ## doublon in args
+    ## doublon in args
     if (!is.null(genoud_args$starting.values)) {
         stop("Please use 'parinit' instead of 'genoud_args$starting.values'")
     }
@@ -279,6 +279,20 @@ max_EI <-function(model, plugin = NULL, type = "UK",
     }
     
     args$Domains <- cbind(lower, upper)
+
+    ## CAUTION it is required to evaluate this line here
+    if (is.null(genoud_args$boundary.enforcement)) {
+        args$boundary.enforcement <- 0 
+    } else {
+        args$boundary.enforcement <- genoud_args$boundary.enforcement
+    }
+        
+    if (is.null(genoud_args$optim.method)) {
+        args$optim.method <- ifelse(args$boundary.enforcement < 2, "BFGS",  "L-BFGS-B")
+    } else {
+        args$optim.method <- genoud_args$optim.method
+    }
+          
     args$genoud_args <- NULL
     
     args <- c(args,                ## formals of 'genoud'

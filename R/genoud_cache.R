@@ -167,20 +167,20 @@ genoud_cache <- function(fn, nvars, max = FALSE, pop.size = 1000,
         stop("'gr' must not be given in this function!")
     }
     
-    if (FALSE) {
-        Ldots <- list(...)
-        cat("XXX\n")
-        print(Ldots)
-        if (!is.na(match("gr", names(Ldots)))) {
-            stop("'gr' is not a formal argument of the 'genoud_cache' function ",
-                 "and it can not either be passed in dots '...'")
-        }
-    }
-
     mc <- as.list(match.call())
 
-    ## cat("XXX\n")
-    ## Caution the first name is ""
+    ## =========================================================================
+    ## 'nmArgs' contains the names of the formals in the call that are
+    ## not formals of `genoud`. These should be passed to `fn` hence
+    ## must be formals of `fn`. 
+    ##
+    ## Caution the first name in the call is "" (to mean the present
+    ## function). Note that we do not pass all the arguments ofd 'fn'
+    ## to 'fnCache' and 'grCache', but only the first one. The other
+    ## arguments are found in 'envf'. We use names with dots, since 'res' or
+    ## 'gradient' could be formal arguments of 'fn'.
+    ## =========================================================================
+    
     nmArgs <- setdiff(names(mc), names(formals(genoud_cache)))
     nmF <- names(formals(fn))
     nmArgs[1] <- nmF[1]
@@ -188,54 +188,55 @@ genoud_cache <- function(fn, nvars, max = FALSE, pop.size = 1000,
         Pb <- setdiff(nmArgs, nmF)
         stop("Arguments ", Pb, " can not be passed to 'fn'") 
     }
-    L <- list(x = NA)
+
+    L <- list(NA)
     names(L) <- nmF[1]
+    
     if (length(nmArgs) > 1) {
         for (i in 2:length(nmArgs)) {
             nm <- nmArgs[i]
-            L[[nm]] <- mc[[nm]]
+            L[[nm]] <- eval(mc[[nm]], envir = parent.frame())
         }
     }
 
-    envir <- new.env()
+    envf <- new.env()
     
-    fnCache <- function(x) {
+    fnCache <- function(x, envir) {
         L[[1]] <- x
-        res <- do.call(fn, L)
-        assign("gradient", value = res$gradient, envir = envir)
-        res$objective
+        .res <- do.call(fn, L)
+        assign(".gradient", value = .res$gradient, envir = envir)
+        .res$objective
     }
     
-    grCache <- function(x) {
-        get("gradient", envir = envir)
+    environment(fnCache) <- envf
+
+    grCache <- function(x, envir) {
+        get(".gradient", envir = envir)
     }
-
-    ## is this really useful?
-    environment(fnCache) <- environment(grCache) <- envir
-
-    ## pE <- parent.env(environment())
-    ## cat("XXX\n")
-    ## print(ls(envir = pE))
     
+    environment(grCache) <- envf
+
+    ## =========================================================================
+    ## The arguments of the call to 'genoud' include the arguments
+    ## given in the call which are not arguments of 'fn', plus 'fn' and 'gr'.
+    ## =========================================================================
+
     args <- list()
-    ## copy/replace the default values
-    nms2 <- setdiff(intersect(names(mc), names(formals(genoud))),
-                   c("fn", "gr"))
+    nms2 <- setdiff(intersect(names(mc), names(formals(genoud))), c("fn", "gr"))
     if (length(nms2) > 0) {
         for (i in 1:length(nms2)) {
             nm <- nms2[i]
-            args[[nm]] <- mc[[nm]] 
+            args[[nm]] <- eval(mc[[nm]], envir = parent.frame())
         }
     }
     args[["fn"]] <- fnCache
     args[["gr"]] <- grCache
-    
-    ## 'dots' arguments.
-    ## if (length(Ldots) > 0) args <- c(args, Ldots)
+    args[["envir"]] <- envf
     
     res <- do.call(genoud, args = args)
 
     res
     
 }
+
 

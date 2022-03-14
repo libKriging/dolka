@@ -14,7 +14,7 @@ qEI_with_grad(
   eps = 1e-05,
   deriv = TRUE,
   out_list = TRUE,
-  trace = 1
+  trace = 0
 )
 }
 \arguments{
