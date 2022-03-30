@@ -224,7 +224,7 @@ max_EI <-function(model, plugin = NULL, type = "UK",
     ##  XXXY make a function for that? In 'DiceOptim', the default
     ##  values of 'genoud' are overloaded for all the criteria, but this is
     ##  not very well documented.
-    ##  =========================================================================
+    ##  ========================================================================
 
     ind <- match(genoud_args, c("fn", "max", "gr")) 
     ind1 <- !is.na(ind)
@@ -281,18 +281,27 @@ max_EI <-function(model, plugin = NULL, type = "UK",
     args$Domains <- cbind(lower, upper)
 
     ## CAUTION it is required to evaluate this line here
-    if (is.null(genoud_args$boundary.enforcement)) {
-        args$boundary.enforcement <- 0 
-    } else {
-        args$boundary.enforcement <- genoud_args$boundary.enforcement
-    }
-        
+    ## if (is.null(genoud_args$boundary.enforcement)) {
+    ##     args$boundary.enforcement <- 0 
+    ## } else {
+    ##     args$boundary.enforcement <- genoud_args$boundary.enforcement
+    ## }
+    args$boundary.enforcement <- 2
+
     if (is.null(genoud_args$optim.method)) {
-        args$optim.method <- ifelse(args$boundary.enforcement < 2, "BFGS",  "L-BFGS-B")
+        args$optim.method <-
+            ifelse(args$boundary.enforcement < 2, "BFGS",  "L-BFGS-B")
     } else {
         args$optim.method <- genoud_args$optim.method
     }
-          
+
+    ## =========================================================================
+    ## XXXY The following two lines require some explanations.
+    ## =========================================================================
+    
+    args$unif.seed <- floor(runif(1, max = 10000))
+    args$int.seed <- floor(runif(1, max = 10000))
+    
     args$genoud_args <- NULL
     
     args <- c(args,                ## formals of 'genoud'

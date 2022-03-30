@@ -50,7 +50,7 @@
 ##' ## ===========================================
 ##' braninDer <- function(x) {
 ##'    Sys.sleep(0.01)
-##'    braninGrad(x)$gradient
+##'    branin_with_grad(x)$gradient
 ##' }
 ##' 
 ##' ## separate objective and gradient functions
@@ -61,14 +61,14 @@
 ##' ## gradient "cached"
 ##' ## ================
 ##' teCache <-
-##'     system.time(resCache <- optim_cache(par = c(0.5, 0.5), fn = braninGrad))
+##'     system.time(resCache <- optim_cache(par = c(0.5, 0.5), fn = branin_with_grad))
 ##' rbind("optim" = te, "optim_cache" = teCache)
 ##' c("optim" = res$value, "optim_cache" = resCache$value)
 ##'
 ##' ## Check the use of ...
 ##' ## ====================
 ##' braninShift <- function(x, shift = 0) {
-##'     res <- braninGrad(x)
+##'     res <- branin_with_grad(x)
 ##'     res$objective <- res$objective + shift
 ##'     res
 ##' }

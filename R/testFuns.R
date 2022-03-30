@@ -16,14 +16,14 @@
 ##' 
 ##' @examples
 ##' X <- matrix(runif(100), ncol = 2, dimnames = list(NULL, c("x1", "x2")))
-##' Obj <- apply(X, 1, function(x) braninGrad(x)$objective)
+##' Obj <- apply(X, 1, function(x) branin_with_grad(x)$objective)
 ##' ObjDK <- apply(X, 1, DiceKriging::branin)
 ##' max(abs(Obj - ObjDK))
-##' Grad <- t(apply(X, 1, function(x) braninGrad(x)$gradient))
+##' Grad <- t(apply(X, 1, function(x) branin_with_grad(x)$gradient))
 ##' GradNum <- t(apply(X, 1, function(x) grad(DiceKriging::branin, x)))
 ##' max(abs(Grad - GradNum))
 ##' 
-braninGrad <- function(x) {
+branin_with_grad <- function(x) {
     
     x1 <- x[1] * 15 - 5   
     x2 <- x[2] * 15

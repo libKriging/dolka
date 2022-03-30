@@ -228,6 +228,9 @@ max_qEI <- function(model,
                     minimization = TRUE,
                     optimcontrol = NULL,
                     trace = 1) {
+
+    message("This function is still not well-tested. ",
+            "Use 'DiceOptim::max_qEI' in case of doubt")
     
     crit <- match.arg(crit)
     
@@ -266,7 +269,7 @@ max_qEI <- function(model,
         
         if (optim.method == "BFGS") {
             if (is.null(parinit))
-                parinit <- array(NaN,dim=c(npoints, model@d, 0))
+                parinit <- array(NaN, dim = c(npoints, model@d, 0))
             if (is.null(optimcontrol$nStarts))
                 optimcontrol$nStarts <- 4
             if (is.null(optimcontrol$fastCompute))
@@ -369,21 +372,20 @@ max_qEI <- function(model,
             ## Added to cope with the dependence between default
             ## values
             
-            if (is.null(optimcontrol$boundary.enforcement)) {
-                args$boundary.enforcement <- 0 
-            } else {
-                args$boundary.enforcement <- optimcontrol$boundary.enforcement
-            }
+            ## if (is.null(optimcontrol$boundary.enforcement)) {
+            ##     args$boundary.enforcement <- 0 
+            ## } else {
+            ##     args$boundary.enforcement <- optimcontrol$boundary.enforcement
+            ## }
+            args$boundary.enforcement <- 2
             
             if (is.null(optimcontrol$optim.method)) {
-                args$optim.method <- ifelse(args$boundary.enforcement < 2, "BFGS",  "L-BFGS-B")
+                args$optim.method <-
+                    ifelse(args$boundary.enforcement < 2, "BFGS",  "L-BFGS-B")
             } else {
                 args$optim.method <- optimcontrol$optim.method
             }
           
-
-
-            
             args$Domains <- cbind(LOWER, UPPER)
             
             nmsGen <- names(formals(genoud))

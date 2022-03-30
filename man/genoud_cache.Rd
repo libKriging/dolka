@@ -172,7 +172,7 @@ library(rgenoud)
 ## ===========================================
 braninDer <- function(x) {
    Sys.sleep(0.01)
-   braninGrad(x)$gradient
+   branin_with_grad(x)$gradient
 }
 
 ## separate objective and gradient functions
@@ -185,7 +185,7 @@ te <- system.time(res <- genoud(fn = branin, nvars = 2,
 
 ## gradient "cached"
 ## ================
-teCache <- system.time(resCache <- genoud_cache(fn = braninGrad, nvars = 2,
+teCache <- system.time(resCache <- genoud_cache(fn = branin_with_grad, nvars = 2,
                                                 unif.seed = 123,
                                                 int.seed = 456,
                                                 Domains = dom))
@@ -195,7 +195,7 @@ c("genoud" = res$value, "genoud_cache" = resCache$value)
 ## Check the use of ...
 ## ====================
 braninShift <- function(x, shift = 0) {
-    res <- braninGrad(x)
+    res <- branin_with_grad(x)
     res$objective <- res$objective + shift
     res
  }

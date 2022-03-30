@@ -118,7 +118,7 @@ contours(model, which = "sd", grad = TRUE, whereGrad = "grid") +
 ## more involved examples
 ## ======================
 \dontrun{
-braninG <- function(x) braninGrad(x)$gradient
+braninG <- function(x) branin_with_grad(x)$gradient
 contours(model, which = character(0), grad = TRUE,
          other = "branin", otherGrad = "braninG", whereGrad = "grid") +
     ggtitle("Branin function and its gradient")

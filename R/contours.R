@@ -101,7 +101,7 @@
 ##' ## more involved examples
 ##' ## ======================
 ##' \dontrun{
-##' braninG <- function(x) braninGrad(x)$gradient
+##' braninG <- function(x) branin_with_grad(x)$gradient
 ##' contours(model, which = character(0), grad = TRUE,
 ##'          other = "branin", otherGrad = "braninG", whereGrad = "grid") +
 ##'     ggtitle("Branin function and its gradient")
@@ -289,9 +289,16 @@ contours <- function(object,
     if (!is.null(other)) {
         nmo <- as.character(other)
         other <- match.fun(other)
-        df[[nmo]] <- apply(df, MARGIN = 1, FUN = other)
+        if ("model" %in% names(formals(other))) {
+            df[[nmo]] <- apply(df[ , inputNames], MARGIN = 1, FUN = other, model = object)
+        } else if ("object" %in% names(formals(other))) {
+            df[[nmo]] <- apply(df[ , inputNames], MARGIN = 1, FUN = other, object = object)
+        } else {
+            df[[nmo]] <- apply(df[ , inputNames], MARGIN = 1, FUN = other)
+        }
+        ## df[[nmo]] <- apply(df, MARGIN = 1, FUN = other)
     }
-
+    
     df2 <- tidyr::gather(df, key = "which", value = "z", -inputNames)
     
     colors <- grDevices::colorRampPalette(c("seagreen","orange",
