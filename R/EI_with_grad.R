@@ -103,17 +103,17 @@ EI_with_grad <- function (x, model, plugin = NULL, type = c("UK", "SK"),
     
     if (is.data.frame(x)) {
         d <- length(x)
-        if (d != model@d) stop("'x' does not have the right lenght") 
+        if (d != model@d) stop("'x' does not have the right length") 
         newdata.num <- as.numeric(x)
         newdata <- data.frame(t(newdata.num))
     } else {
         if (is.null(dim(x))) {
             d <- length(x)
-            if (d != model@d){ stop("'x' does not have the right lenght") }
+            if (d != model@d) stop("'x' does not have the right length")
             newdata <- data.frame(t(as.numeric(x)))
         } else {
             d <- ncol(x)
-            if (d != model@d){ stop("'x' does not have the right length") }
+            if (d != model@d) stop("'x' does not have the right length")
             newdata <- data.frame(x)
         }
     }
@@ -175,7 +175,8 @@ EI_with_grad <- function (x, model, plugin = NULL, type = c("UK", "SK"),
             EI.grad <- - kriging.mean.grad
         } else {
             kriging.sd.grad <- as.vector(pred$sd.deriv)
-            EI.grad <- - kriging.mean.grad * xcr.prob + kriging.sd.grad * xcr.dens
+            EI.grad <- - kriging.mean.grad * xcr.prob +
+                kriging.sd.grad * xcr.dens
         }
     }
 

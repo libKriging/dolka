@@ -10,12 +10,11 @@
 ## The check is for the following stats trend, mean, variance, and covariance.
 ##
 ## *****************************************************************************
-
+library(testthat)
 context("Predict with derivatives")
 
 library(numDeriv)
 library(dolka)
-library(testthat)
 
 set.seed(12345)
 n <- 16
@@ -66,14 +65,28 @@ colnames(XNew) <- colnames(myKm@X)
 ## =============================================================================
 ## Compute the Jacobian arrays with 'numDeriv'
 ## =============================================================================
+
+pred_dolka <- getS3method("predict", class = "km", envir = asNamespace("dolka"))
+
 for (type in types) {
+    
+    ## for tests when the package is not installed
     predNew <- predict(myKm, newdata = XNew, type = type,
                        cov = TRUE, deriv = TRUE)
+    ## print(names(predNew))
+    
     for (stat in stats) {
         J <- jacobian(krigeStat, x = XNew,
                       which = stat,
                       object = myKm, type = type)
+        if (FALSE) {
+            cat("XXX\n")
+            cat("stat = ", stat, "\n")
+            print(dim(J))
+            print(dims[[stat]])
+        }
         dim(J) <- dims[[stat]]
+
         errDer <- predNew[[paste0(stat, ".deriv")]] - J
         test_that(desc = sprintf(paste0("Jacobian array of prediction",
                                         " stat =\"%s\", type = \"%s\""),

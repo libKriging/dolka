@@ -4,12 +4,11 @@
 ## Check the value of EI and its gradient
 ##
 ## *****************************************************************************
-
-## context("EI and its derivatives")
+library(testthat)
+context("EI and its derivatives")
 
 library(numDeriv)
 library(dolka)
-library(testthat)
 
 set.seed(12345)
 d <- 2

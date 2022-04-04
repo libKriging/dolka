@@ -1,4 +1,4 @@
-# *****************************************************************************
+## *****************************************************************************
 ## AUTHOR: Yves Deville <deville.yves@alpestat.com>
 ##
 ## Test the function 'qEI_with_grad'.
@@ -9,11 +9,11 @@
 ##
 ## o When 'nNew' a.k.a 'q' increases, the precision on the gradient
 ## becomes poor. With 'nNew = 6' the test fails.
-## 
+##
 ## *****************************************************************************
 
 library(testthat)
-# context("qEI_with_grad")
+context("qEI_with_grad")
 
 library(dolka)
 library(numDeriv)
@@ -32,10 +32,10 @@ XNew <- matrix(runif(nNew * d), nrow = nNew, ncol = d)
 for (i in seq_along(Funs)) {
     fun <- get(Funs[i], mode = "function")
     y <- apply(X, 1, fun)
-    fit <- km(~1, design = X, response = y, 
+    fit <- km(~1, design = X, response = y,
               covtype = "gauss", control = list(pop.size = 50, trace = FALSE),
               parinit = c(0.5, 0.5))
-    
+
     ## function of a vector to check the gradient
     qEIFun <- function(xNew, type) {
         dim(xNew) <- c(nNew, d)
@@ -52,9 +52,9 @@ for (i in seq_along(Funs)) {
         res <- qEI_with_grad(XNew, model = fit, deriv = TRUE,
                              type = type,
                              out_list = TRUE)
-        
+
         ## res <- DiceOptim::qEI.grad(XNew, model = fit, type = type)
-        
+
         errDer <- abs(gradNum - res$gradient)
         ## print(errDer)
         Den <- (abs(gradNum) + abs(res$gradient)) / 2.0

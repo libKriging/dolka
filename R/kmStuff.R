@@ -411,16 +411,15 @@ predict.km <- function(object, newdata, type,
 
 ##' @export
 ##' @method predict km
-if (TRUE) {
-    setMethod("predict", "km", 
-              function(object, newdata, type, se.compute = TRUE,
-                       cov.compute = FALSE, light.return = FALSE, bias.correct = FALSE,
-                       checkNames = TRUE, ...) {
-                  predict.km(object = object, newdata = newdata, type = type,
-                             se.compute = se.compute, cov.compute = cov.compute,
-                       light.return = light.return,
-                       bias.correct = bias.correct, checkNames = checkNames, ...)
-              }
-              )
-}
+setMethod("predict", "km", 
+          function(object, newdata, type, se.compute = TRUE,
+                   cov.compute = FALSE, light.return = FALSE, bias.correct = FALSE,
+                   checkNames = TRUE, ...) {
+              predict.km(object = object, newdata = newdata, type = type,
+                         se.compute = se.compute, cov.compute = cov.compute,
+                         light.return = light.return,
+                         bias.correct = bias.correct, checkNames = checkNames, ...)
+          }
+          )
+
 
