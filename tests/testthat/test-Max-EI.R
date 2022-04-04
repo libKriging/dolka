@@ -17,7 +17,7 @@ library(DiceKriging)
 ## library(rlibkriging)
 
 ## =============================================================================
-## CAUTION dolka must be attached AFTER rlibkrigin or the
+## CAUTION dolka must be attached AFTER rlibkriging or the
 ## predict method for 'km' will not work as expected.
 ## =============================================================================
 library(dolka)
@@ -44,7 +44,7 @@ for (pkg in c("dolka", "DiceOptim")) {
 
     if (FALSE) {
     ## get the 'max_EI' function of the current package 
-        mEI[[pkg]] <- get("max_EI", mode = "function",
+        mEI[[pkg]] <- get("max_EI_genoud", mode = "function",
                           envir = asNamespace("DiceOptim"))
     }
     
@@ -55,7 +55,7 @@ for (pkg in c("dolka", "DiceOptim")) {
     for (iter in 1:nIter) {
         if (pkg == "dolka") {
             opt[[pkg]] <-
-                suppressWarnings(dolka::max_EI(model = model[[pkg]],
+                suppressWarnings(dolka::max_EI_genoud(model = model[[pkg]],
                                               lower = lower, upper = upper))
             ## genoud_args = list(print.level = 0))
         } else {
@@ -74,8 +74,8 @@ for (pkg in c("dolka", "DiceOptim")) {
     }
 }
 
-test_that(desc = paste0("'dolka::max_EI' leads to the same results as\n",
-                        "'DiceOptim::max_EI' on several EGO iterations\n",
+test_that(desc = paste0("'dolka::max_EI_genoud' leads to the same results as\n",
+                        "'DiceOptim::max_EI_genoud' on several EGO iterations\n",
                         "to minimize the branin function"),
           code = expect_true(all.equal(model[["DiceOptim"]]@X,
                                        model[["dolka"]]@X)))

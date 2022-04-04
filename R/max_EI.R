@@ -1,13 +1,13 @@
 ## *****************************************************************************
 
-##' @title Maximization of the Expected Improvement Criterion
+##' @title Maximization of the Expected Improvement Criterion using genoud
 ##' 
 ##' @description Given an object in
-##'     \code{\link[DiceKriging]{km-class}} and a set of tuning parameters
-##'     (\code{lower}, \code{upper}, \code{parinit}, and
-##'     \code{genoud_args}), \code{max_EI} performs the maximization of
-##'     the Expected Improvement criterion and delivers the next point
-##'     to be visited in an EGO-like procedure.
+##'     \code{\link[DiceKriging]{km-class}} and a set of tuning
+##'     parameters (\code{lower}, \code{upper}, \code{parinit}, and
+##'     \code{genoud_args}), \code{max_EI} performs the maximization
+##'     of the Expected Improvement criterion and delivers the next
+##'     point to be visited in an EGO-like procedure. 
 ##' 
 ##' @details The latter maximization relies on a genetic algorithm
 ##'     using derivatives, \code{\link[rgenoud]{genoud}}. This
@@ -88,7 +88,7 @@
 ##' 
 ##' @keywords optimize
 ##'
-##' @export max_EI
+##' @export max_EI_genoud
 ##' 
 ##' @examples
 ##' library(rgenoud)
@@ -202,11 +202,11 @@
 ##' g
 ##' 
 ##' }
-##' 
-max_EI <-function(model, plugin = NULL, type = "UK",
-                  lower, upper, parinit = NULL,
-                  minimization = TRUE,
-                  genoud_args = NULL) {
+##'
+max_EI_genoud <- function(model, plugin = NULL, type = c("UK", "SK"),
+                          lower, upper, parinit = NULL,
+                          minimization = TRUE,
+                          genoud_args = NULL) {
     
     type <- match.arg(type)
     if (is.null(plugin)) plugin <- min(model@y)
@@ -323,4 +323,168 @@ max_EI <-function(model, plugin = NULL, type = "UK",
     
 }
 
+## *****************************************************************************
  
+##' @title Maximization of the Expected Improvement Criterion using
+##'     cmaes
+##' 
+##' @description Given an object in
+##'     \code{\link[DiceKriging]{km-class}} and a set of tuning
+##'     parameters (\code{lower}, \code{upper}, \code{parinit}, and
+##'     \code{cmaes_args}), \code{max_EI_cmaes} performs the
+##'     maximization of the Expected Improvement criterion and
+##'     delivers the next point to be visited in an EGO-like
+##'     procedure.
+##' 
+##' @details The latter maximization relies on the
+##'     \code{\link[cmaes]{cma_es}} function for global
+##'     optimization. As opposed to \code{\link{max_EI_genoud}}, the
+##'     optimization does not use the gradient of the objective.
+##' 
+##' The current minimum of the observations can be replaced by an
+##' arbitrary value given in \code{plugin}, which is useful in
+##' particular in noisy frameworks.
+##' 
+##' @param model An object inheriting from the class \code{"km"}, for
+##'     example and object with class \code{"KM"} from the package
+##'     \pkg{rlibkriging}.
+##' 
+##' @param plugin Optional scalar: if provided, it replaces the
+##'     minimum of the current observations.
+##' 
+##' @param type Character \code{"UK"} (default) or \code{"SK"} giving
+##'     the kriging type.
+##'
+##' @param lower,upper Numeric vectors of length \eqn{d} giving the
+##'     lower and upper bounds for the variables to be optimized over.
+##' 
+##' @param parinit Optional numeric vector of initial values for the
+##'     variables to be optimized over.
+##'
+##' @param minimization Logical specifying if EI is used in
+##'     minimization or in maximization. Of course, this concerns
+##'     the objective function to be optimized, not the EI which
+##'     is always maximized.
+##' 
+##' @param cmaes_args Optional named list of arguments for the
+##'     \code{\link{cmaes::cma_es}} optimization function. This list
+##'     will contain one element named \code{control} which is itself
+##'     a list. Note that be it given or not the element
+##'     \code{fnscale} will be internally set to \code{-1} to achieve
+##'     a \emph{maximization} of the EI.
+##' 
+##' @return A list with several elements among which:
+##'
+##' \itemize{
+##'     \item{\code{par} }{A numeric matrix with 1 row and \code{d} columns 
+##'         the best set of parameters found.}
+##'     \item{\code{value} }{A numeric vector with length one,
+##'        giving the value of expected improvement at \code{par}.}
+##' }
+##' 
+##' The matrix \code{par} will often have to be coerced into a data frame
+##' (see \bold{Examples} or into a numeric vector.
+##' 
+##' @export max_EI_cmaes
+##'
+##' @examples
+##' library(cmaes)
+##' set.seed(123)
+##' 
+##' ## =========================================================================
+##' ##  "ONE-SHOT" EI-MAXIMIZATION OF THE BRANIN FUNCTION 
+##' ## 	KNOWN AT A 9-POINTS FACTORIAL DESIGN         
+##' ## =========================================================================
+##' 
+##' ## a 9-points factorial design, and the corresponding response
+##' ## ===========================================================
+##' d <- 2; n <- 9
+##' design.fact <- expand.grid(x1 = seq(0, 1, length = 3),
+##'                            x2 = seq(0, 1, length = 3)) 
+##' y.branin <- apply(design.fact, 1, branin)
+##' 
+##' ## model fitting
+##' ## =============
+##' mykm <- km(~1, design = design.fact, response = y.branin, 
+##'            covtype="gauss", control = list(pop.size = 50, trace = FALSE),
+##'            parinit = c(0.5, 0.5))
+##' 
+##' ## EGO one step
+##' ## ============
+##' lower <- rep(0.0, d); upper <- rep(1.0, d)    
+##' EGOkm <- max_EI_cmaes(mykm, lower = lower, upper = upper, 
+##'                       cmaes_args = list(control = list(maxit = 1e6)))
+##' EGOkm$par
+##' EGOkm$value
+##' 
+##' ## The same with a KM object
+##' ## =========================
+##' if (require(rlibkriging)) {
+##'     myKM <- KM(~1, design = design.fact, response = y.branin, 
+##'                covtype="gauss", parinit = c(0.5, 0.5))
+##'      lower <- rep(0.0, d); upper <- rep(1.0, d)    
+##'      EGOKM <- max_EI_cmaes(myKM, lower = lower, upper = upper, 
+##'                       cmaes_args = list(control = list(maxit = 1e6)))
+##'      EGOKM$par
+##'      EGOKM$value
+##' }
+##' 
+max_EI_cmaes <-function(model, plugin = NULL, type = c("UK", "SK"),
+                        lower, upper, parinit = NULL,
+                        minimization = TRUE,
+                        cmaes_args = NULL) {
+    
+    if (!requireNamespace("cmaes", quietly = TRUE)) {
+        stop("The package 'cmaes' is required")
+    }
+    
+    type <- match.arg(type)
+    if (is.null(plugin)) plugin <- min(model@y)
+    
+    d <- ncol(model@X)
+
+    if (!is.null(parinit)) {
+        if (length(parinit) != d) {
+            stop("the length of 'parinit' does not match the dimension in ",
+                 "'model'")
+        }
+    } else {
+        parinit <- runif(d)
+        parinit <- lower + parinit * (upper - lower)
+    }
+    
+    args <- list()
+    args$par <- parinit
+    args$fn <- EI
+    args$lower <- lower
+    args$upper <- upper
+    
+    if (!is.null(cmaes_args)) {
+        if (!is.list(cmaes_args)) {
+            stop("when given, 'cmaes_args' must be a list")
+        }
+        args$control <- cmaes_args$control
+        args$control$fnscale <- -1
+    } else args$control <- list(fnscale = -1)
+    
+    args <- c(args,                ## formals of 'cmaes'
+              model = model,       ## further arguments for 'EI', passed by dots
+              plugin = plugin,
+              type = type,
+              minimization = minimization)
+    
+    ## args[["..."]] <- NULL    
+    
+    o <- do.call(cmaes::cma_es, args)
+    
+    o$par <- t(as.matrix(o$par))
+    colnames(o$par) <- colnames(model@X)
+    o$value <- as.matrix(o$value)
+    colnames(o$value) <- "EI"  
+
+    return(o)
+    
+}
+
+ 
+
