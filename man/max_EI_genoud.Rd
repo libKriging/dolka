@@ -111,7 +111,7 @@ fit.branin <- km(~1, design = design.fact, response = y.branin,
 ## EGO one step
 ## ============
 lower <- rep(0.0, d); upper <- rep(1.0, d)    
-oEGO <- max_EI(fit.branin, lower = lower, upper = upper, 
+oEGO <- max_EI_genoud(fit.branin, lower = lower, upper = upper, 
                genoud_args = list(pop.size = 20, BFGSburnin = 2))
 print(oEGO)
 
@@ -145,8 +145,8 @@ fitCB <- km(~1, design = design.fact, response = yCB,
 ## EI maximization
 ## ================
 lower <- rep(0.0, d); upper <- rep(1.0, d)   
-oCB <- max_EI(fitCB, lower = lower, upper = upper, 
-              genoud_args = list(pop.size = 20, BFGSburnin = 2))
+oCB <- max_EI_genoud(fitCB, lower = lower, upper = upper, 
+                     genoud_args = list(pop.size = 20, BFGSburnin = 2))
 print(oCB)
 
 ## graphics
@@ -183,9 +183,11 @@ fit.gP <- km(~1, design = design.fact, response = y.gP,
 ## EI maximization
 ## ===============
 lower <- rep(0.0, d); upper <- rep(1.0, d);    
-oEGO.gP <- max_EI(model = fit.gP, lower = lower, upper = upper,
-                  genoud_args = list(pop.size = 50, max.generations = 50,
-                                     wait.generations = 5, BFGSburnin = 10))
+oEGO.gP <- max_EI_genoud(model = fit.gP, lower = lower, upper = upper,
+                         genoud_args = list(pop.size = 50,
+                                            max.generations = 50,
+                                            wait.generations = 5,
+                                            BFGSburnin = 10))
 print(oEGO.gP)
 
 ## graphics

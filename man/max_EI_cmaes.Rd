@@ -39,7 +39,7 @@ the objective function to be optimized, not the EI which
 is always maximized.}
 
 \item{cmaes_args}{Optional named list of arguments for the
-\code{\link{cmaes::cma_es}} optimization function. This list
+\code{\link[cmaes]{cma_es}} optimization function. This list
 will contain one element named \code{control} which is itself
 a list. Note that be it given or not the element
 \code{fnscale} will be internally set to \code{-1} to achieve

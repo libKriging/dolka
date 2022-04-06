@@ -115,7 +115,7 @@
 ##' ## EGO one step
 ##' ## ============
 ##' lower <- rep(0.0, d); upper <- rep(1.0, d)    
-##' oEGO <- max_EI(fit.branin, lower = lower, upper = upper, 
+##' oEGO <- max_EI_genoud(fit.branin, lower = lower, upper = upper, 
 ##'                genoud_args = list(pop.size = 20, BFGSburnin = 2))
 ##' print(oEGO)
 ##' 
@@ -149,8 +149,8 @@
 ##' ## EI maximization
 ##' ## ================
 ##' lower <- rep(0.0, d); upper <- rep(1.0, d)   
-##' oCB <- max_EI(fitCB, lower = lower, upper = upper, 
-##'               genoud_args = list(pop.size = 20, BFGSburnin = 2))
+##' oCB <- max_EI_genoud(fitCB, lower = lower, upper = upper, 
+##'                      genoud_args = list(pop.size = 20, BFGSburnin = 2))
 ##' print(oCB)
 ##' 
 ##' ## graphics
@@ -187,9 +187,11 @@
 ##' ## EI maximization
 ##' ## ===============
 ##' lower <- rep(0.0, d); upper <- rep(1.0, d);    
-##' oEGO.gP <- max_EI(model = fit.gP, lower = lower, upper = upper,
-##'                   genoud_args = list(pop.size = 50, max.generations = 50,
-##'                                      wait.generations = 5, BFGSburnin = 10))
+##' oEGO.gP <- max_EI_genoud(model = fit.gP, lower = lower, upper = upper,
+##'                          genoud_args = list(pop.size = 50,
+##'                                             max.generations = 50,
+##'                                             wait.generations = 5,
+##'                                             BFGSburnin = 10))
 ##' print(oEGO.gP)
 ##' 
 ##' ## graphics
@@ -367,7 +369,7 @@ max_EI_genoud <- function(model, plugin = NULL, type = c("UK", "SK"),
 ##'     is always maximized.
 ##' 
 ##' @param cmaes_args Optional named list of arguments for the
-##'     \code{\link{cmaes::cma_es}} optimization function. This list
+##'     \code{\link[cmaes]{cma_es}} optimization function. This list
 ##'     will contain one element named \code{control} which is itself
 ##'     a list. Note that be it given or not the element
 ##'     \code{fnscale} will be internally set to \code{-1} to achieve

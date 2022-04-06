@@ -130,21 +130,24 @@ EI <- function (x, model, plugin = NULL, type = c("UK", "SK"),
     ## =========================================================================
     
     if (is.data.frame(x)) {
-        d <- length(x)
-        if (d != model@d) stop("'x' does not have the right size") 
+        d <- ncol(x)
+        if (d != model@d) stop("'x' does not have the right number of columns") 
         newdata.num <- as.numeric(x)
-        newdata <- data.frame(t(newdata.num))
+        newdata <- matrix(newdata.num, ncol = d)
     } else {
         if (is.null(dim(x))) {
             d <- length(x)
             if (d != model@d){ stop("x does not have the right size") }
-            newdata <- data.frame(t(as.numeric(x)))
+            newdata <- matrix(as.numeric(x), ncol = d)
         } else {
             d <- ncol(x)
-            if (d != model@d){ stop("x does not have the right size") }
-            newdata <- data.frame(x)
+            if (d != model@d){
+                stop("x does not have the right number of colums")
+            }
+            newdata <- matrix(as.numeric(x), ncol = d)
         }
     }
+    
     colnames(newdata) <- colnames(model@X)
     
     ## =========================================================================

@@ -9,7 +9,8 @@ Description: Transitional package for Bayesian optimization using DiceOptim
 Depends: DiceKriging, DiceOptim, numDeriv, methods, ggplot2
 Suggests: rlibkriging, testthat, tidyr, grDevices, scatterplot3d, rmarkdown, 
     knitr
-Imports: stats, randtoolbox, pbivnorm, rgenoud, mnormt, DiceDesign, parallel
+Imports: stats, randtoolbox, pbivnorm, rgenoud, mnormt, DiceDesign, parallel,
+    cmaes
 VignetteBuilder: knitr
 License: GPL
 Encoding: UTF-8
