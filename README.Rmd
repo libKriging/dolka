@@ -60,3 +60,83 @@ method when **dolka** is attached.
   Expected Improvement `EI` and the multi-points a.k.a *q-point*
   Expected Improvement `qEI`.
   
+# INSTALLATION
+
+
+For now, we do not provide precompiled binary versions (`.zip` for
+Windows). These may be provided soon in the 
+[**Releases**](https://github.com/libKriging/dolka/releases) tab.
+
+## Simple installation using **remotes** or **devtools**
+
+Since **dolka** does not for now need compilation (it doe not embed C
+or Cpp program files), the **remotes** package can be used.
+
+```
+remotes::install_github("libKriging/dolka")
+```
+
+If you have the 
+[**Rtools**](https://cran.r-project.org/bin/windows/Rtools/)
+installed, you can also rely on **devtools** package 
+```
+devtools::install_github("libKriging/dolka")
+```
+
+In both cases many options are available e.g. to select a specific
+branch or commit. See the manuals of **remotes** or **devtools** for
+more information.
+
+
+## Clone, build and install
+
+### Cloning the repository
+
+If you do not have yet a local `dolka` repository, use `git clone` to
+clone the `dolka` repository
+
+``` bash
+git clone https://github.com/liKriging/dolka
+```
+
+This will create a `dolka` sub-directory of the current directory,
+i.e. the directory from which the git command was issued. 
+
+### Installation on Unix and MacOs systems
+
+With these systems you can install a package from its source. Move to
+the parent directory of your cloned repository and use the following
+command from a terminal to create a tarball source file
+
+``` bash
+R CMD build dolka
+```
+This will produce a so-called *source tarball* file
+`dolka_x.y.z` where `x`, `y` and
+`z` stand for the major, minor and patch version numbers. Then you can
+install from a command line
+
+``` bash
+R CMD INSTALL dolka_x.y.z.tar.gz
+```
+Of course if you are using the **RStudio** IDE you can install the 
+source tarball using the menu **Tools/Install Packages...** Note that
+a *source tarball* file is called a *Package Archive File* in **RStudio**.
+
+
+### Installation on Windows systems
+
+Provided that you have the
+[**Rtools**](https://cran.r-project.org/bin/windows/Rtools/)
+installed, you can use the same commands as Linux and MacOS sytems.
+
+Moreover you can create a so-called **precompiled binary** file using
+
+``` bash
+R CMD INSTALL --build dolka_x.y.z.tar.gz
+```
+
+This will create a `dolka.zip` file that can be used on a Windows
+plateform which may not be equipped with the **Rtools**. For instance,
+with **RStudio** you can use the menu `Tools/Install Packages` and
+select `Install from:` to install a precompiled `.zip` file.

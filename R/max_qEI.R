@@ -6,10 +6,13 @@
 ##' @description Maximization of the \code{\link{qEI}} criterion. This
 ##'     is a refactoring of the function from the \pkg{DiceOptim}
 ##'     package. However only the \code{"genoud"} method can be used
-##'     for now. calls the function \code{\link{genoud}} using
-##'     analytical formulae of \code{\link{qEI}} and its gradient
-##'     \code{\link{qEI.grad}}.
+##'     for now. This function calls the function \code{\link{genoud}}
+##'     using analytical formulae of \code{\link{qEI}} and its
+##'     gradient \code{\link{qEI.grad}}.
 ##'
+##' @section Caution: this function may well be renamed
+##'     \code{max_qEI_genoud} in a future version.
+##' 
 ##' @details
 ##' The parameters of list \code{optimcontrol} include
 ##' \code{optimcontrol$method}, with character value \code{"BFGS"}
