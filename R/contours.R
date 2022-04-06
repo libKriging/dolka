@@ -147,7 +147,7 @@ contours <- function(object,
     colnames(df) <- inputNames <- colnames(object@X)
     inputNames <- c("x1", "x2")
 
-    pred <- predict(object, newdata = df, deriv = FALSE, type = "UK")
+    pred <- predict(object, newdata = as.matrix(df), deriv = FALSE, type = "UK")
     
     Which <- c("mean", "sd", "var")
     i <- match(which, Which)
@@ -247,7 +247,8 @@ contours <- function(object,
             }
             
         } else {
-            predDer <- predict(object, newdata = dfDer, deriv = TRUE, type = "UK")    
+            predDer <- predict(object, newdata = as.matrix(dfDer),
+                               deriv = TRUE, type = "UK")    
             statDer <- predDer[[paste0(which, ".deriv")]]
             dDer <- dim(statDer)
             statDer <- statDer[slice.index(statDer, 1) == slice.index(statDer, 2)]
