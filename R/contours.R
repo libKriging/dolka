@@ -150,6 +150,8 @@ contours <- function(object,
     mat <- matrix(as.numeric(unlist(df)), ncol = 2)
     colnames(mat) <- c("x1", "x2")
     pred <- predict(object, newdata = mat, deriv = FALSE, type = "UK")
+    X <- object@X
+    colnames(X) <- c("x1", "x2")
     
     Which <- c("mean", "sd", "var")
     i <- match(which, Which)
@@ -269,7 +271,7 @@ contours <- function(object,
                                 bins = 20, alpha = 0.7) +
             scale_fill_manual(values = colors,
                               name ="Value", drop = FALSE) +
-                geom_point(data = as.data.frame(object@X),
+                geom_point(data = as.data.frame(X),
                            mapping = aes(x = x1, y = x2),
                            size = 3) +
             geom_segment(data = dfDer,
@@ -315,7 +317,7 @@ contours <- function(object,
         ##             bins = 20) +
         scale_fill_manual(values = colors,
                           name ="Value", drop = FALSE) +
-        geom_point(data = as.data.frame(object@X),
+        geom_point(data = as.data.frame(X),
                    mapping = aes(x = x1, y = x2),
                    size = 3) +
         facet_grid(which ~ ., scales = "free")  
