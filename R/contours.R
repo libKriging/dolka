@@ -148,6 +148,7 @@ contours <- function(object,
     inputNames <- c("x1", "x2")
 
     mat <- matrix(as.numeric(unlist(df)), ncol = 2)
+    colnames(mat) <- c("x1", "x2")
     pred <- predict(object, newdata = mat, deriv = FALSE, type = "UK")
     
     Which <- c("mean", "sd", "var")
