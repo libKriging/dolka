@@ -120,7 +120,7 @@ contours <- function(object,
                      whereGrad = "levels",
                      ...) {
 
-    if (class(object != "km") {
+    if (class(object) != "km") {
         stop("'object' must be of class \"km\")
     }
     
