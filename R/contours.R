@@ -119,6 +119,10 @@ contours <- function(object,
                      otherGrad = NULL,
                      whereGrad = "levels",
                      ...) {
+
+    if (class(object != "km") {
+        stop("'object' must be of class \"km\")
+    }
     
     x1 <- x2 <- stat <- statDer1 <- statDer2 <- z <- NULL
     
