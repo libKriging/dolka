@@ -141,8 +141,8 @@ contours <- function(object,
     
     nGrid <- rep(nGrid, length.out = 2)
     xGrid <- list(x1 = seq(from = lower[1], to = upper[1], length.out = nGrid[1]),
-                  x2 = seq(from = lower[1], to = upper[1], length.out = nGrid[1]))
-    df <- expand.grid(xGrid)
+                  x2 = seq(from = lower[2], to = upper[2], length.out = nGrid[2]))
+    df <- expand.grid(x1 = xGrid[[1]], x2 = xGrid[[2]])
     
     colnames(df) <- inputNames <- colnames(object@X)
     inputNames <- c("x1", "x2")
