@@ -144,7 +144,7 @@ contours <- function(object,
                   x2 = seq(from = lower[2], to = upper[2], length.out = nGrid[2]))
     df <- expand.grid(x1 = xGrid[[1]], x2 = xGrid[[2]])
     
-    colnames(df) <- inputNames <- colnames(object@X)
+    ## colnames(df) <- inputNames <- colnames(object@X)
     inputNames <- c("x1", "x2")
 
     mat <- matrix(as.numeric(unlist(df)), ncol = 2)
